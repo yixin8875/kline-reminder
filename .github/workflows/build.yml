@@ -72,5 +72,6 @@ jobs:
         files: artifacts/**/*
         draft: false
         prerelease: false
+        token: ${{ secrets.GH_TOKEN }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
