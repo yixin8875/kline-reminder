@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Button } from './ui/button'
 import { Dialog, DialogContent } from './ui/dialog'
 import { AddTradeModal } from './AddTradeModal'
-import { Plus, Trash2, Camera, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
+import { Plus, Trash2, Camera } from 'lucide-react'
 import { cn } from '../utils/cn'
 
 export function JournalView(): JSX.Element {

@@ -12,7 +12,7 @@ interface JournalState {
   getLogImage: (filename: string) => Promise<string>
 }
 
-export const useJournalStore = create<JournalState>((set, get) => ({
+export const useJournalStore = create<JournalState>((set) => ({
   logs: [],
   isLoading: false,
   error: null,

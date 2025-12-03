@@ -97,6 +97,12 @@ ipcMain.handle('journal:list', () => dbService.getJournalEntries())
 ipcMain.handle('journal:delete', (_, id) => dbService.deleteJournalEntry(id))
 ipcMain.handle('journal:get-image', (_, filename) => dbService.getImage(filename))
 
+// IPC for Tasks
+ipcMain.handle('task:create', (_, task) => dbService.createTask(task))
+ipcMain.handle('task:list', () => dbService.getTasks())
+ipcMain.handle('task:update', (_, id, update) => dbService.updateTask(id, update))
+ipcMain.handle('task:delete', (_, id) => dbService.deleteTask(id))
+
 // IPC for Window Resizing
 ipcMain.on('resize-window', (event, width, height) => {
   const webContents = event.sender

@@ -11,6 +11,12 @@ const api = {
   deleteJournalLog: (id: string): Promise<number> => ipcRenderer.invoke('journal:delete', id),
   getJournalImage: (filename: string): Promise<string> => ipcRenderer.invoke('journal:get-image', filename),
   
+  // Task API
+  createTask: (task: any): Promise<any> => ipcRenderer.invoke('task:create', task),
+  getTasks: (): Promise<any[]> => ipcRenderer.invoke('task:list'),
+  updateTask: (id: string, update: any): Promise<number> => ipcRenderer.invoke('task:update', id, update),
+  deleteTask: (id: string): Promise<number> => ipcRenderer.invoke('task:delete', id),
+
   resizeWindow: (width: number, height: number): void => ipcRenderer.send('resize-window', width, height)
 }
 

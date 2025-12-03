@@ -19,6 +19,12 @@ declare global {
       getJournalLogs: () => Promise<TradeLog[]>
       deleteJournalLog: (id: string) => Promise<number>
       getJournalImage: (filename: string) => Promise<string>
+      
+      createTask: (task: any) => Promise<any>
+      getTasks: () => Promise<any[]>
+      updateTask: (id: string, update: any) => Promise<number>
+      deleteTask: (id: string) => Promise<number>
+
       resizeWindow: (width: number, height: number) => void
     }
   }

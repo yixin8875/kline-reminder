@@ -20,9 +20,15 @@ function App(): JSX.Element {
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
   
   const tasks = useTaskStore((state) => state.tasks)
+  const fetchTasks = useTaskStore((state) => state.fetchTasks)
   const removeTask = useTaskStore((state) => state.removeTask)
   const isAlwaysOnTop = useTaskStore((state) => state.isAlwaysOnTop)
   const setAlwaysOnTop = useTaskStore((state) => state.setAlwaysOnTop)
+
+  // Initial Fetch
+  useEffect(() => {
+    fetchTasks()
+  }, [])
 
   // Sync Always on Top state with Electron main process
   useEffect(() => {

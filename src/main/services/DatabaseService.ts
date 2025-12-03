@@ -28,6 +28,25 @@ class DatabaseService {
     this.ensureImagesDir()
   }
 
+  // --- Task Operations ---
+
+  async createTask(task: any) {
+    return await this.tasksDb.insert(task)
+  }
+
+  async getTasks() {
+    // Sort by createdAt descending
+    return await this.tasksDb.find({}).sort({ createdAt: -1 })
+  }
+
+  async updateTask(id: string, update: any) {
+    return await this.tasksDb.update({ _id: id }, { $set: update }, {})
+  }
+
+  async deleteTask(id: string) {
+    return await this.tasksDb.remove({ _id: id }, {})
+  }
+
   private async ensureImagesDir() {
     try {
       await fs.access(this.imagesDir)
