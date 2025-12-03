@@ -10,7 +10,11 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, linux-latest]
+        include:
+          - os: macos-latest
+            build_script: build:mac
+          - os: windows-latest
+            build_script: build:win
         
     runs-on: ${{ matrix.os }}
     
@@ -36,21 +40,8 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
-    - name: Package app (macOS)
-      if: matrix.os == 'macos-latest'
-      run: npm run build:mac -- --publish=never
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Package app (Windows)
-      if: matrix.os == 'windows-latest'
-      run: npm run build:win -- --publish=never
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Package app (Linux)
-      if: matrix.os == 'linux-latest'
-      run: npm run build:linux -- --publish=never
+    - name: Package app
+      run: npm run ${{ matrix.build_script }} -- --publish=never
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
@@ -59,6 +50,7 @@ jobs:
       with:
         name: ${{ matrix.os }}-build
         path: dist/
+        retention-days: 30
         
   release:
     needs: build
