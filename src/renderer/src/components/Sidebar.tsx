@@ -1,21 +1,61 @@
 import { Button } from './ui/button'
 import { Switch } from './ui/switch'
-import { Pin, PinOff, Plus, Settings } from 'lucide-react'
+import { Pin, PinOff, Plus, Settings, Clock, BookOpen } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { cn } from '../utils/cn'
 
 interface SidebarProps {
   onAddTask: () => void
   onOpenSettings: () => void
   isAlwaysOnTop: boolean
   toggleAlwaysOnTop: () => void
+  currentView: 'reminders' | 'journal'
+  onViewChange: (view: 'reminders' | 'journal') => void
 }
 
-export function Sidebar({ onAddTask, onOpenSettings, isAlwaysOnTop, toggleAlwaysOnTop }: SidebarProps): JSX.Element {
+export function Sidebar({ 
+  onAddTask, 
+  onOpenSettings, 
+  isAlwaysOnTop, 
+  toggleAlwaysOnTop,
+  currentView,
+  onViewChange
+}: SidebarProps): JSX.Element {
   const { t } = useTranslation()
 
   return (
     <div className="flex items-center justify-between p-4 border-b bg-card/50 backdrop-blur sticky top-0 z-10">
-      <h1 className="text-xl font-bold text-primary tracking-tight">{t('app.title')}</h1>
+      <div className="flex items-center gap-4">
+        {/* View Switcher */}
+        <div className="flex bg-secondary/50 rounded-lg p-1 gap-1">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={cn("h-8 px-3", currentView === 'reminders' && "bg-background shadow-sm")}
+            onClick={() => {
+              console.log('Switching to reminders')
+              onViewChange('reminders')
+            }}
+            title="Reminders"
+          >
+            <Clock className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Reminders</span>
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={cn("h-8 px-3", currentView === 'journal' && "bg-background shadow-sm")}
+            onClick={() => {
+              console.log('Switching to journal')
+              onViewChange('journal')
+            }}
+            title="Journal"
+          >
+            <BookOpen className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Journal</span>
+          </Button>
+        </div>
+      </div>
       
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 mr-2" title={t('sidebar.alwaysOnTop')}>
@@ -30,9 +70,11 @@ export function Sidebar({ onAddTask, onOpenSettings, isAlwaysOnTop, toggleAlways
           <Settings className="w-5 h-5" />
         </Button>
 
-        <Button variant="default" size="icon" onClick={onAddTask} title={t('sidebar.addReminder')}>
-          <Plus className="w-5 h-5" />
-        </Button>
+        {currentView === 'reminders' && (
+          <Button variant="default" size="icon" onClick={onAddTask} title={t('sidebar.addReminder')}>
+            <Plus className="w-5 h-5" />
+          </Button>
+        )}
       </div>
     </div>
   )

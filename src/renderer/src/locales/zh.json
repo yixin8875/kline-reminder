@@ -13,7 +13,8 @@
     "delete": "删除",
     "closingIn": "K线收盘还有",
     "seconds": "秒！",
-    "alertTitle": "K线提醒"
+    "alertTitle": "K线提醒",
+    "alertMessage": "{{period}}分钟 K线将在 {{notifyBefore}} 秒后收盘！"
   },
   "addTask": {
     "title": "添加提醒",
@@ -51,6 +52,8 @@
     "dark": "暗色",
     "system": "跟随系统",
     "accentColor": "主题色",
+    "voiceAlert": "语音播报",
+    "enableVoiceAlert": "启用语音播报",
     "cancel": "取消",
     "save": "保存更改",
     "fileTooLarge": "文件过大，请选择 2MB 以内的文件。",

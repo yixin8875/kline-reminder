@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog'
 import { Button } from './ui/button'
+import { Switch } from './ui/switch'
 import { useTaskStore, ThemeMode } from '../store/useTaskStore'
-import { Volume2, Upload, Moon, Sun, Monitor, Globe } from 'lucide-react'
+import { Volume2, Upload, Moon, Sun, Monitor, Globe, Mic } from 'lucide-react'
 import { cn } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
 
@@ -22,7 +23,7 @@ const THEME_COLORS = [
 
 export function SettingsModal({ open, onOpenChange }: SettingsModalProps): JSX.Element {
   const { t, i18n } = useTranslation()
-  const { soundSettings, setSoundSettings, themeSettings, setThemeSettings } = useTaskStore()
+  const { soundSettings, setSoundSettings, themeSettings, setThemeSettings, ttsEnabled, setTtsEnabled } = useTaskStore()
   
   // Sound State
   const [soundType, setSoundType] = useState<'default' | 'custom'>(soundSettings.type)
@@ -120,6 +121,23 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps): JSX.E
                  <Globe className="w-4 h-4" />
                  {i18n.language === 'zh' ? 'English' : '中文'}
                </Button>
+             </div>
+           </div>
+
+           <div className="h-[1px] bg-border" />
+
+           {/* Voice Alert Settings */}
+           <div className="space-y-3">
+             <h3 className="text-sm font-medium text-muted-foreground">{t('settings.voiceAlert')}</h3>
+             <div className="flex items-center justify-between">
+               <div className="flex items-center gap-2">
+                 <Mic className="w-4 h-4 text-muted-foreground" />
+                 <span className="text-sm">{t('settings.enableVoiceAlert')}</span>
+               </div>
+               <Switch 
+                 checked={ttsEnabled} 
+                 onChange={(e) => setTtsEnabled(e.target.checked)} 
+               />
              </div>
            </div>
 

@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'ele
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { dbService } from './services/DatabaseService'
 
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
@@ -87,6 +88,28 @@ ipcMain.on('set-always-on-top', (event, flag) => {
   const win = BrowserWindow.fromWebContents(webContents)
   if (win) {
     win.setAlwaysOnTop(flag, 'floating')
+  }
+})
+
+// IPC for Journal
+ipcMain.handle('journal:create', (_, entry) => dbService.createJournalEntry(entry))
+ipcMain.handle('journal:list', () => dbService.getJournalEntries())
+ipcMain.handle('journal:delete', (_, id) => dbService.deleteJournalEntry(id))
+ipcMain.handle('journal:get-image', (_, filename) => dbService.getImage(filename))
+
+// IPC for Window Resizing
+ipcMain.on('resize-window', (event, width, height) => {
+  const webContents = event.sender
+  const win = BrowserWindow.fromWebContents(webContents)
+  if (win) {
+    // Ensure we can resize
+    win.setResizable(true)
+    win.setSize(width, height, true) // animate = true
+    
+    // Center only when expanding to large journal view to prevent going off-screen
+    if (width > 800) {
+      win.center()
+    }
   }
 })
 

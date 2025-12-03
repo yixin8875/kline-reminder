@@ -26,6 +26,7 @@ export interface ThemeSettings {
 interface TaskState {
   tasks: Task[]
   isAlwaysOnTop: boolean
+  ttsEnabled: boolean
   soundSettings: SoundSettings
   themeSettings: ThemeSettings
   
@@ -33,6 +34,7 @@ interface TaskState {
   removeTask: (id: string) => void
   toggleTask: (id: string) => void
   setAlwaysOnTop: (value: boolean) => void
+  setTtsEnabled: (value: boolean) => void
   setSoundSettings: (settings: SoundSettings) => void
   setThemeSettings: (settings: ThemeSettings) => void
 }
@@ -42,6 +44,7 @@ export const useTaskStore = create<TaskState>()(
     (set) => ({
       tasks: [],
       isAlwaysOnTop: false,
+      ttsEnabled: false,
       soundSettings: {
         type: 'default',
         customSoundUrl: null,
@@ -76,6 +79,8 @@ export const useTaskStore = create<TaskState>()(
 
       setAlwaysOnTop: (value) => set({ isAlwaysOnTop: value }),
       
+      setTtsEnabled: (value) => set({ ttsEnabled: value }),
+
       setSoundSettings: (settings) => set({ soundSettings: settings }),
 
       setThemeSettings: (settings) => set({ themeSettings: settings }),

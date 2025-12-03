@@ -13,7 +13,8 @@
     "delete": "Delete",
     "closingIn": "candle closing in",
     "seconds": "seconds!",
-    "alertTitle": "K-Line Alert"
+    "alertTitle": "K-Line Alert",
+    "alertMessage": "{{period}}m candle closing in {{notifyBefore}} seconds!"
   },
   "addTask": {
     "title": "Add Reminder",
@@ -51,6 +52,8 @@
     "dark": "Dark",
     "system": "System",
     "accentColor": "Accent Color",
+    "voiceAlert": "Voice Alert",
+    "enableVoiceAlert": "Enable Voice Alert",
     "cancel": "Cancel",
     "save": "Save Changes",
     "fileTooLarge": "File is too large. Please choose a file under 2MB.",

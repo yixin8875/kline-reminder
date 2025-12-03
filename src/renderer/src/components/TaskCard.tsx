@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Trash2, Clock, BellRing } from 'lucide-react'
 import { cn } from '../utils/cn'
-import { playBeep, sendNotification } from '../utils/notifier'
+import { playBeep, sendNotification, speakAlert } from '../utils/notifier'
 
 interface Task {
   id: string
@@ -30,6 +30,7 @@ export function TaskCard({ task, onDelete }: TaskCardProps): JSX.Element {
     if (!task.enabled) return
     
     playBeep()
+    speakAlert(task.name, task.period, task.notifyBefore)
     sendNotification(
       t('task.alertTitle', { name: task.name }),
       t('task.alertMessage', { period: task.period, notifyBefore: task.notifyBefore })
