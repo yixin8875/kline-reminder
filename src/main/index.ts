@@ -1,0 +1,128 @@
+import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron'
+import { join } from 'path'
+import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import icon from '../../resources/icon.png?asset'
+
+let tray: Tray | null = null
+let mainWindow: BrowserWindow | null = null
+let isQuitting = false
+
+function createTray(window: BrowserWindow): void {
+  const iconPath = process.platform === 'win32' ? icon : icon
+  const trayImage = nativeImage.createFromPath(iconPath)
+  
+  tray = new Tray(trayImage)
+  
+  const contextMenu = Menu.buildFromTemplate([
+    { 
+      label: 'Show App', 
+      click: (): void => {
+        window.show()
+      } 
+    },
+    { type: 'separator' },
+    { 
+      label: 'Quit', 
+      click: (): void => {
+        isQuitting = true
+        app.quit()
+      } 
+    }
+  ])
+  
+  tray.setToolTip('K-Line Waker')
+  tray.setContextMenu(contextMenu)
+  
+  tray.on('double-click', () => {
+    window.show()
+  })
+}
+
+function createWindow(): void {
+  // Create the browser window.
+  mainWindow = new BrowserWindow({
+    width: 350, // Narrow window as requested
+    height: 600,
+    show: false,
+    autoHideMenuBar: true,
+    ...(process.platform === 'linux' ? { icon: join(__dirname, '../../build/icon.png') } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    }
+  })
+
+  mainWindow.on('ready-to-show', () => {
+    mainWindow!.show()
+  })
+
+  mainWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url)
+    return { action: 'deny' }
+  })
+  
+  // Intercept close event to hide instead of quit
+  mainWindow.on('close', (event) => {
+    if (!isQuitting) {
+      event.preventDefault()
+      mainWindow!.hide()
+    }
+    return false
+  })
+
+  // HMR for renderer base on electron-vite cli.
+  // Load the remote URL for development or the local html file for production.
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+  } else {
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+  }
+  
+  createTray(mainWindow)
+}
+
+// IPC for Always on Top
+ipcMain.on('set-always-on-top', (event, flag) => {
+  const webContents = event.sender
+  const win = BrowserWindow.fromWebContents(webContents)
+  if (win) {
+    win.setAlwaysOnTop(flag, 'floating')
+  }
+})
+
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+app.whenReady().then(() => {
+  // Set app user model id for windows
+  electronApp.setAppUserModelId('com.electron')
+
+  // Default open or close DevTools by F12 in development
+  // and ignore CommandOrControl + R in production.
+  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
+  app.on('browser-window-created', (_, window) => {
+    optimizer.watchWindowShortcuts(window)
+  })
+
+  createWindow()
+
+  app.on('activate', function () {
+    // On macOS it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  })
+  
+  // Handle explicit quit
+  app.on('before-quit', () => {
+    isQuitting = true
+  })
+})
+
+// Quit when all windows are closed, except on macOS. There, it's common
+// for applications and their menu bar to stay active until the user quits
+// explicitly with Cmd + Q.
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})

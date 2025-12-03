@@ -1,0 +1,72 @@
+{
+  "app": {
+    "title": "K线提醒助手",
+    "noReminders": "暂无活跃提醒",
+    "addReminderHint": "点击 + 添加一个"
+  },
+  "sidebar": {
+    "alwaysOnTop": "窗口置顶",
+    "settings": "设置",
+    "addReminder": "添加提醒"
+  },
+  "task": {
+    "delete": "删除",
+    "closingIn": "K线收盘还有",
+    "seconds": "秒！",
+    "alertTitle": "K线提醒"
+  },
+  "addTask": {
+    "title": "添加提醒",
+    "nameLabel": "标签 / 名称",
+    "namePlaceholder": "例如 BTC/USDT",
+    "periodLabel": "K线周期",
+    "customPeriodLabel": "自定义 (分):",
+    "customPeriodPlaceholder": "输入周期...",
+    "notifyBeforeLabel": "提前提醒 (秒)",
+    "cancel": "取消",
+    "add": "添加任务",
+    "presets": {
+      "1m": "1分钟",
+      "3m": "3分钟",
+      "5m": "5分钟",
+      "15m": "15分钟",
+      "30m": "30分钟",
+      "1h": "1小时",
+      "4h": "4小时",
+      "1d": "日线"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "language": "语言",
+    "sound": "提示音",
+    "defaultBeep": "默认蜂鸣",
+    "customSound": "自定义声音",
+    "uploadFile": "上传文件",
+    "noFileSelected": "未选择文件",
+    "supportedFormats": "支持格式: MP3, WAV, OGG (最大 2MB)",
+    "testSound": "测试声音",
+    "appearance": "外观",
+    "light": "亮色",
+    "dark": "暗色",
+    "system": "跟随系统",
+    "accentColor": "主题色",
+    "cancel": "取消",
+    "save": "保存更改",
+    "fileTooLarge": "文件过大，请选择 2MB 以内的文件。",
+    "colors": {
+      "default": "默认",
+      "blue": "蓝色",
+      "green": "绿色",
+      "orange": "橙色",
+      "red": "红色",
+      "violet": "紫罗兰"
+    }
+  },
+  "confirm": {
+    "deleteTitle": "删除提醒",
+    "deleteDescription": "确定要删除这个提醒吗？此操作无法撤销。",
+    "confirmDelete": "删除",
+    "cancel": "取消"
+  }
+}
