@@ -15,6 +15,8 @@
    - `CSC_LINK`: 证书的 base64 编码内容
    - `CSC_KEY_PASSWORD`: 证书密码
 
+> **注意**: 当前构建配置已禁用代码签名，使用 `--publish=never` 参数。这样可以避免签名相关的错误。
+
 ### 3. 触发构建
 有两种方式触发自动构建：
 
@@ -40,6 +42,20 @@ git push origin v1.0.0
 - **macOS**: `.dmg` 安装包
 - **Windows**: `.exe` 安装程序
 - **Linux**: `.AppImage` 或 `.deb` 包（取决于配置）
+
+## 常见问题
+
+### 1. macOS 代码签名错误
+如果遇到 "empty password will be used for code signing" 错误，说明没有配置代码签名。当前配置已禁用签名，可以正常构建未签名的应用。
+
+### 2. 构建超时
+GitHub Actions 免费账户有使用时间限制，如果构建超时，可以：
+- 优化构建脚本
+- 使用自托管 runner
+- 升级到 GitHub Pro
+
+### 3. 依赖安装失败
+确保 `package-lock.json` 文件已提交到仓库，这样可以保证依赖版本一致性。
 
 ## 注意事项
 

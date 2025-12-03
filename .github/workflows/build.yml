@@ -39,16 +39,14 @@ jobs:
     - name: Package app
       run: |
         if [ "${{ matrix.os }}" = "macos-latest" ]; then
-          npm run build:mac
+          npm run build:mac -- --publish=never
         elif [ "${{ matrix.os }}" = "windows-latest" ]; then
-          npm run build:win
+          npm run build:win -- --publish=never
         elif [ "${{ matrix.os }}" = "linux-latest" ]; then
-          npm run build:linux
+          npm run build:linux -- --publish=never
         fi
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        CSC_LINK: ${{ secrets.CSC_LINK }}
-        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
         
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
