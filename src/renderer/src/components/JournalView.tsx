@@ -4,29 +4,40 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Button } from './ui/button'
 import { Dialog, DialogContent } from './ui/dialog'
 import { AddTradeModal } from './AddTradeModal'
-import { Plus, Trash2, Camera } from 'lucide-react'
+import { Plus, Trash2, Camera, Pencil, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '../utils/cn'
+import { useTranslation } from 'react-i18next'
+import { EditTradeModal } from './EditTradeModal'
 
 export function JournalView(): JSX.Element {
+  const { t } = useTranslation()
   const { logs, fetchLogs, deleteLog, getLogImage, isLoading } = useJournalStore()
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [previewImages, setPreviewImages] = useState<string[]>([])
+  const [previewIndex, setPreviewIndex] = useState(0)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedLog, setSelectedLog] = useState<any>(null)
 
   useEffect(() => {
     fetchLogs()
   }, [])
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this log?')) {
+    if (confirm(t('journal.confirmDelete'))) {
       await deleteLog(id)
     }
   }
 
-  const handleViewImage = async (filename: string) => {
+  const handleViewImages = async (filenames: string[]) => {
     try {
-      const base64 = await getLogImage(filename)
-      setPreviewImage(base64)
+      const arr: string[] = []
+      for (const fn of filenames) {
+        const base64 = await getLogImage(fn)
+        arr.push(base64)
+      }
+      setPreviewImages(arr)
+      setPreviewIndex(0)
       setIsPreviewOpen(true)
     } catch (error) {
       console.error('Failed to load image', error)
@@ -41,50 +52,48 @@ export function JournalView(): JSX.Element {
 
   return (
     <div className="h-full flex flex-col space-y-4 p-4">
-      {/* Header Stats */}
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-card p-4 rounded-lg border shadow-sm">
-          <div className="text-xs text-muted-foreground font-medium">Total Trades</div>
+          <div className="text-xs text-muted-foreground font-medium">{t('journal.totalTrades')}</div>
           <div className="text-2xl font-bold">{totalTrades}</div>
         </div>
         <div className="bg-card p-4 rounded-lg border shadow-sm">
-          <div className="text-xs text-muted-foreground font-medium">Win Rate</div>
-          <div className={cn("text-2xl font-bold", Number(winRate) >= 50 ? "text-green-500" : "text-red-500")}>
+          <div className="text-xs text-muted-foreground font-medium">{t('journal.winRate')}</div>
+          <div className={cn("text-2xl font-bold", Number(winRate) >= 50 ? "text-green-500" : "text-red-500")}> 
             {winRate}%
           </div>
         </div>
         <div className="bg-card p-4 rounded-lg border shadow-sm">
-          <div className="text-xs text-muted-foreground font-medium">Net PnL</div>
-          <div className={cn("text-2xl font-bold", totalPnL >= 0 ? "text-green-500" : "text-red-500")}>
+          <div className="text-xs text-muted-foreground font-medium">{t('journal.netPnl')}</div>
+          <div className={cn("text-2xl font-bold", totalPnL >= 0 ? "text-green-500" : "text-red-500")}> 
             {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)}
           </div>
         </div>
         <div className="flex items-center justify-end">
           <Button onClick={() => setIsAddModalOpen(true)} className="gap-2">
-            <Plus className="w-4 h-4" /> New Log
+            <Plus className="w-4 h-4" /> {t('journal.newLog')}
           </Button>
         </div>
       </div>
 
-      {/* Table */}
       <div className="flex-1 border rounded-md bg-card overflow-hidden flex flex-col">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Date</TableHead>
-              <TableHead>Symbol</TableHead>
-              <TableHead>Direction</TableHead>
-              <TableHead>Entry / Exit</TableHead>
-              <TableHead>PnL</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-[100px]">{t('journal.table.date')}</TableHead>
+              <TableHead>{t('journal.table.symbol')}</TableHead>
+              <TableHead>{t('journal.table.direction')}</TableHead>
+              <TableHead>{t('journal.table.entryExit')}</TableHead>
+              <TableHead>{t('journal.table.pnl')}</TableHead>
+              <TableHead>{t('journal.table.status')}</TableHead>
+              <TableHead className="text-right">{t('journal.table.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {logs.length === 0 && !isLoading ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                  No trade logs found. Start journaling!
+                  {t('journal.empty')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -99,13 +108,13 @@ export function JournalView(): JSX.Element {
                       "px-2 py-1 rounded-full text-xs font-medium",
                       log.direction === 'Long' ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
                     )}>
-                      {log.direction}
+                      {log.direction === 'Long' ? t('journal.direction.long') : t('journal.direction.short')}
                     </span>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col text-xs">
-                      <span>In: {log.entryPrice}</span>
-                      {log.exitPrice && <span>Out: {log.exitPrice}</span>}
+                      <span>{t('journal.in')}: {log.entryPrice}</span>
+                      {log.exitPrice && <span>{t('journal.out')}: {log.exitPrice}</span>}
                     </div>
                   </TableCell>
                   <TableCell className={cn(
@@ -121,17 +130,35 @@ export function JournalView(): JSX.Element {
                       log.status === 'Loss' && "border-red-500 text-red-500",
                       (log.status === 'Open' || log.status === 'Closed') && "border-muted-foreground text-muted-foreground"
                     )}>
-                      {log.status}
+                      {log.status === 'Open' ? t('journal.status.open') : log.status === 'Closed' ? t('journal.status.closed') : log.status === 'Win' ? t('journal.status.win') : t('journal.status.loss')}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      {log.imageFileName && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => { setSelectedLog(log); setIsEditModalOpen(true) }}
+                        title={t('journal.edit')}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      {((log as any).imageFileNames && (log as any).imageFileNames.length > 0) && (
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => handleViewImage(log.imageFileName!)}
-                          title="View Screenshot"
+                          onClick={() => handleViewImages((log as any).imageFileNames)}
+                          title={t('journal.viewScreenshot')}
+                        >
+                          <Camera className="w-4 h-4 text-blue-400" />
+                        </Button>
+                      )}
+                      {log.imageFileName && !((log as any).imageFileNames && (log as any).imageFileNames.length > 0) && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleViewImages([log.imageFileName!])}
+                          title={t('journal.viewScreenshot')}
                         >
                           <Camera className="w-4 h-4 text-blue-400" />
                         </Button>
@@ -154,15 +181,33 @@ export function JournalView(): JSX.Element {
       </div>
 
       <AddTradeModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
+      <EditTradeModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} log={selectedLog} />
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl w-auto p-1 bg-transparent border-none shadow-none">
-           {previewImage && (
-             <img 
-              src={previewImage} 
-              alt="Trade Screenshot" 
-              className="max-w-full max-h-[85vh] rounded-lg shadow-2xl border border-border"
-            />
+        <DialogContent className="max-w-5xl w-auto p-4 bg-card border-border">
+           {previewImages.length > 0 && (
+             <div className="flex flex-col gap-3">
+               <div className="relative flex items-center justify-center">
+                 <Button variant="ghost" size="icon" onClick={() => setPreviewIndex((i) => Math.max(0, i - 1))} className="absolute left-2">
+                   <ChevronLeft className="w-5 h-5" />
+                 </Button>
+                 <img 
+                   src={previewImages[previewIndex]} 
+                   alt={t('journal.screenshotAlt')} 
+                   className="max-w-[70vw] max-h-[70vh] rounded-lg shadow-2xl border border-border"
+                 />
+                 <Button variant="ghost" size="icon" onClick={() => setPreviewIndex((i) => Math.min(previewImages.length - 1, i + 1))} className="absolute right-2">
+                   <ChevronRight className="w-5 h-5" />
+                 </Button>
+               </div>
+               <div className="grid grid-cols-6 gap-2">
+                 {previewImages.map((img, idx) => (
+                   <button key={idx} onClick={() => setPreviewIndex(idx)} className={cn("border rounded", idx === previewIndex ? "border-primary" : "border-border")}> 
+                     <img src={img} alt={t('journal.previewAlt')} className="h-[70px] w-full object-cover rounded" />
+                   </button>
+                 ))}
+               </div>
+             </div>
            )}
         </DialogContent>
       </Dialog>

@@ -86,11 +86,18 @@ class DatabaseService {
   // --- Journal Operations ---
 
   async createJournalEntry(entry: any) {
-    // If there is an image base64 string, save it and replace with filename
-    if (entry.image) {
+    if (entry.images && Array.isArray(entry.images) && entry.images.length > 0) {
+      const filenames: string[] = []
+      for (const img of entry.images) {
+        const filename = await this.saveImageToDisk(img)
+        filenames.push(filename)
+      }
+      entry.imageFileNames = filenames
+      delete entry.images
+    } else if (entry.image) {
       const filename = await this.saveImageToDisk(entry.image)
       entry.imageFileName = filename
-      delete entry.image // Do not store base64 in DB
+      delete entry.image
     }
     return await this.journalDb.insert(entry)
   }
@@ -102,8 +109,14 @@ class DatabaseService {
 
   async deleteJournalEntry(id: string) {
     const entry: any = await this.journalDb.findOne({ _id: id })
-    if (entry && entry.imageFileName) {
-      await this.deleteImageFromDisk(entry.imageFileName)
+    if (entry) {
+      if (entry.imageFileNames && Array.isArray(entry.imageFileNames)) {
+        for (const fn of entry.imageFileNames) {
+          await this.deleteImageFromDisk(fn)
+        }
+      } else if (entry.imageFileName) {
+        await this.deleteImageFromDisk(entry.imageFileName)
+      }
     }
     return await this.journalDb.remove({ _id: id }, {})
   }
@@ -117,6 +130,43 @@ class DatabaseService {
       console.error(`Failed to read image ${filename}:`, error)
       throw error
     }
+  }
+
+  async updateJournalEntry(id: string, update: any) {
+    const existing: any = await this.journalDb.findOne({ _id: id })
+    if (!existing) return 0
+
+    let baseList: string[] = existing.imageFileNames || (existing.imageFileName ? [existing.imageFileName] : [])
+    let newImageFileNames: string[] | undefined
+
+    if (update && update.removeImageFileNames && Array.isArray(update.removeImageFileNames) && update.removeImageFileNames.length > 0) {
+      const toRemove: string[] = update.removeImageFileNames
+      for (const fn of toRemove) {
+        await this.deleteImageFromDisk(fn)
+      }
+      baseList = baseList.filter((fn) => !toRemove.includes(fn))
+      delete update.removeImageFileNames
+    }
+
+    if (update && update.images && Array.isArray(update.images) && update.images.length > 0) {
+      const filenames: string[] = []
+      for (const img of update.images) {
+        const filename = await this.saveImageToDisk(img)
+        filenames.push(filename)
+      }
+      newImageFileNames = [...baseList, ...filenames]
+      delete update.images
+    } else {
+      newImageFileNames = baseList
+    }
+
+    const $set: any = { ...update }
+    if (newImageFileNames) {
+      $set.imageFileNames = newImageFileNames
+      $set.imageFileName = undefined
+    }
+
+    return await this.journalDb.update({ _id: id }, { $set }, {})
   }
 }
 

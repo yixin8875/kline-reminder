@@ -10,6 +10,7 @@ const api = {
   getJournalLogs: (): Promise<any[]> => ipcRenderer.invoke('journal:list'),
   deleteJournalLog: (id: string): Promise<number> => ipcRenderer.invoke('journal:delete', id),
   getJournalImage: (filename: string): Promise<string> => ipcRenderer.invoke('journal:get-image', filename),
+  updateJournalLog: (id: string, update: any): Promise<number> => ipcRenderer.invoke('journal:update', id, update),
   
   // Task API
   createTask: (task: any): Promise<any> => ipcRenderer.invoke('task:create', task),

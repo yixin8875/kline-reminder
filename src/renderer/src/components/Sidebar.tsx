@@ -33,26 +33,24 @@ export function Sidebar({
             size="sm" 
             className={cn("h-8 px-3", currentView === 'reminders' && "bg-background shadow-sm")}
             onClick={() => {
-              console.log('Switching to reminders')
               onViewChange('reminders')
             }}
-            title="Reminders"
+            title={t('sidebar.reminders')}
           >
             <Clock className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Reminders</span>
+            <span className="hidden sm:inline">{t('sidebar.reminders')}</span>
           </Button>
           <Button 
             variant="ghost" 
             size="sm" 
             className={cn("h-8 px-3", currentView === 'journal' && "bg-background shadow-sm")}
             onClick={() => {
-              console.log('Switching to journal')
               onViewChange('journal')
             }}
-            title="Journal"
+            title={t('sidebar.journal')}
           >
             <BookOpen className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Journal</span>
+            <span className="hidden sm:inline">{t('sidebar.journal')}</span>
           </Button>
         </div>
       </div>

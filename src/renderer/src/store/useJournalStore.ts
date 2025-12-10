@@ -10,6 +10,7 @@ interface JournalState {
   addLog: (log: CreateTradeLogDTO) => Promise<void>
   deleteLog: (id: string) => Promise<void>
   getLogImage: (filename: string) => Promise<string>
+  updateLog: (id: string, update: Partial<TradeLog> & { images?: string[], removeImageFileNames?: string[] }) => Promise<void>
 }
 
 export const useJournalStore = create<JournalState>((set) => ({
@@ -63,5 +64,15 @@ export const useJournalStore = create<JournalState>((set) => ({
 
   getLogImage: async (filename) => {
     return await window.api.getJournalImage(filename)
+  },
+
+  updateLog: async (id, update) => {
+    try {
+      await window.api.updateJournalLog(id, update)
+      await useJournalStore.getState().fetchLogs()
+    } catch (error) {
+      console.error('Failed to update log:', error)
+      throw error
+    }
   }
 }))

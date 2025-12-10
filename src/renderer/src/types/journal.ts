@@ -13,6 +13,7 @@ export interface TradeLog {
   pnl?: number
   notes?: string
   imageFileName?: string
+  imageFileNames?: string[]
 }
 
 export interface CreateTradeLogDTO {
@@ -25,4 +26,5 @@ export interface CreateTradeLogDTO {
   pnl?: number
   notes?: string
   image?: string // Base64 string for creation only
+  images?: string[]
 }

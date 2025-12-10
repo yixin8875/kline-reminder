@@ -7,7 +7,9 @@
   "sidebar": {
     "alwaysOnTop": "窗口置顶",
     "settings": "设置",
-    "addReminder": "添加提醒"
+    "addReminder": "添加提醒",
+    "reminders": "提醒",
+    "journal": "日志"
   },
   "task": {
     "delete": "删除",
@@ -71,5 +73,59 @@
     "deleteDescription": "确定要删除这个提醒吗？此操作无法撤销。",
     "confirmDelete": "删除",
     "cancel": "取消"
+  },
+  "journal": {
+    "totalTrades": "总笔数",
+    "winRate": "胜率",
+    "netPnl": "净盈亏",
+    "newLog": "新增记录",
+    "addTitle": "添加交易日志",
+    "table": {
+      "date": "日期",
+      "symbol": "品种",
+      "direction": "方向",
+      "entryExit": "开/平仓",
+      "pnl": "盈亏",
+      "status": "状态",
+      "actions": "操作"
+    },
+    "empty": "暂无交易日志，开始记录吧！",
+    "confirmDelete": "确定删除该记录吗？",
+    "viewScreenshot": "查看截图",
+    "screenshotAlt": "交易截图",
+    "previewAlt": "预览",
+    "direction": {
+      "long": "做多",
+      "short": "做空"
+    },
+    "status": {
+      "open": "持仓",
+      "closed": "已了结",
+      "win": "盈利",
+      "loss": "亏损"
+    },
+    "in": "开仓",
+    "out": "平仓",
+    "form": {
+      "date": "日期",
+      "symbol": "品种",
+      "symbolPlaceholder": "如 BTC/USDT",
+      "direction": "方向",
+      "status": "状态",
+      "entryPrice": "开仓价",
+      "exitPrice": "平仓价",
+      "pnl": "盈亏",
+      "notes": "备注",
+      "notesPlaceholder": "策略、感受、失误…",
+      "screenshots": "截图",
+      "uploadScreenshots": "上传截图",
+      "pasteHint": "在此粘贴（Ctrl+V）图片"
+    },
+    "save": "保存日志",
+    "saving": "保存中...",
+    "edit": "编辑",
+    "editTitle": "编辑交易日志",
+    "update": "更新日志",
+    "updating": "更新中..."
   }
 }

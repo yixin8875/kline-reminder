@@ -1,23 +1,24 @@
-import { useState, useEffect, ClipboardEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
 import { useJournalStore } from '../store/useJournalStore'
-import { TradeDirection, TradeStatus } from '../types/journal'
-import { ImagePlus, X } from 'lucide-react'
+import { TradeDirection, TradeStatus, TradeLog } from '../types/journal'
 import { useTranslation } from 'react-i18next'
+import { ImagePlus, X } from 'lucide-react'
 
-interface AddTradeModalProps {
+interface EditTradeModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  log: TradeLog | null
 }
 
-export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.Element {
-  const { addLog } = useJournalStore()
+export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps): JSX.Element {
+  const { updateLog, getLogImage } = useJournalStore()
   const { t } = useTranslation()
-  
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+
+  const [date, setDate] = useState('')
   const [symbol, setSymbol] = useState('')
   const [direction, setDirection] = useState<TradeDirection>('Long')
   const [entryPrice, setEntryPrice] = useState('')
@@ -25,65 +26,92 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
   const [status, setStatus] = useState<TradeStatus>('Closed')
   const [pnl, setPnl] = useState('')
   const [notes, setNotes] = useState('')
-  const [images, setImages] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [existingFiles, setExistingFiles] = useState<string[]>([])
+  const [existingPreviews, setExistingPreviews] = useState<Record<string, string>>({})
+  const [removedFiles, setRemovedFiles] = useState<string[]>([])
+  const [newImages, setNewImages] = useState<string[]>([])
 
-  // Auto-calculate PnL if Entry, Exit, and Direction are set
+  useEffect(() => {
+    if (log) {
+      setDate(new Date(log.date).toISOString().split('T')[0])
+      setSymbol(log.symbol)
+      setDirection(log.direction)
+      setEntryPrice(String(log.entryPrice))
+      setExitPrice(log.exitPrice != null ? String(log.exitPrice) : '')
+      setStatus(log.status)
+      setPnl(log.pnl != null ? String(log.pnl) : '')
+      setNotes(log.notes || '')
+      const names = (log as any).imageFileNames && (log as any).imageFileNames.length > 0
+        ? (log as any).imageFileNames
+        : (log as any).imageFileName ? [(log as any).imageFileName] : []
+      setExistingFiles(names)
+      setRemovedFiles([])
+      setNewImages([])
+    }
+  }, [log])
+
   useEffect(() => {
     if (entryPrice && exitPrice && !isNaN(Number(entryPrice)) && !isNaN(Number(exitPrice))) {
       const entry = Number(entryPrice)
       const exit = Number(exitPrice)
       let calculatedPnl = 0
-      
       if (direction === 'Long') {
         calculatedPnl = exit - entry
       } else {
         calculatedPnl = entry - exit
       }
-      
       setPnl(calculatedPnl.toFixed(2))
     }
   }, [entryPrice, exitPrice, direction])
 
-  const handlePaste = (e: ClipboardEvent<HTMLDivElement>) => {
-    const items = e.clipboardData.items
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf('image') !== -1) {
-        const blob = items[i].getAsFile()
-        if (blob) {
-          const reader = new FileReader()
-          reader.onload = (event) => {
-            if (event.target?.result) {
-              setImages((prev) => [...prev, event.target!.result as string])
-            }
-          }
-          reader.readAsDataURL(blob)
-        }
+  useEffect(() => {
+    const load = async () => {
+      const map: Record<string, string> = {}
+      for (const fn of existingFiles) {
+        try {
+          const data = await getLogImage(fn)
+          map[fn] = data
+        } catch {}
       }
+      setExistingPreviews(map)
     }
-  }
+    if (existingFiles.length > 0) {
+      load()
+    } else {
+      setExistingPreviews({})
+    }
+  }, [existingFiles, getLogImage])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files) return
-    const arr = Array.from(files)
-    arr.forEach(file => {
+    Array.from(files).forEach(file => {
       const reader = new FileReader()
       reader.onload = (event) => {
         if (event.target?.result) {
-          setImages((prev) => [...prev, event.target!.result as string])
+          setNewImages((prev) => [...prev, event.target!.result as string])
         }
       }
       reader.readAsDataURL(file)
     })
   }
 
-  const handleSubmit = async () => {
-    if (!symbol || !entryPrice) return
+  const removeExisting = (fn: string) => {
+    setExistingFiles((prev) => prev.filter((x) => x !== fn))
+    setRemovedFiles((prev) => [...prev, fn])
+  }
 
+  const removeNew = (idx: number) => {
+    setNewImages((prev) => prev.filter((_, i) => i !== idx))
+  }
+
+  const handleSubmit = async (): Promise<void> => {
+    if (!log) return
     setIsSubmitting(true)
     try {
-      await addLog({
+      const id = log.id || log._id!
+      await updateLog(id, {
         date: new Date(date).getTime(),
         symbol: symbol.toUpperCase(),
         direction,
@@ -92,53 +120,33 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
         status,
         pnl: pnl ? Number(pnl) : undefined,
         notes,
-        images: images.length > 0 ? images : undefined
+        images: newImages.length > 0 ? newImages : undefined,
+        removeImageFileNames: removedFiles.length > 0 ? removedFiles : undefined
       })
       onOpenChange(false)
-      resetForm()
-    } catch (error) {
-      console.error(error)
+    } catch (e) {
+      console.error(e)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const resetForm = () => {
-    setDate(new Date().toISOString().split('T')[0])
-    setSymbol('')
-    setDirection('Long')
-    setEntryPrice('')
-    setExitPrice('')
-    setStatus('Closed')
-    setPnl('')
-    setNotes('')
-    setImages([])
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] bg-card text-card-foreground" onPaste={handlePaste}>
+      <DialogContent className="sm:max-w-[800px] bg-card text-card-foreground">
         <DialogHeader>
-          <DialogTitle>{t('journal.addTitle')}</DialogTitle>
+          <DialogTitle>{t('journal.editTitle')}</DialogTitle>
         </DialogHeader>
-        
+
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">{t('journal.form.date')}</label>
-              <Input 
-                type="date" 
-                value={date} 
-                onChange={(e) => setDate(e.target.value)} 
-              />
+              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">{t('journal.form.symbol')}</label>
-              <Input 
-                placeholder={t('journal.form.symbolPlaceholder')}
-                value={symbol} 
-                onChange={(e) => setSymbol(e.target.value)} 
-              />
+              <Input placeholder={t('journal.form.symbolPlaceholder')} value={symbol} onChange={(e) => setSymbol(e.target.value)} />
             </div>
           </div>
 
@@ -172,63 +180,55 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">{t('journal.form.entryPrice')}</label>
-              <Input 
-                type="number" 
-                placeholder="0.00" 
-                value={entryPrice} 
-                onChange={(e) => setEntryPrice(e.target.value)} 
-              />
+              <Input type="number" placeholder="0.00" value={entryPrice} onChange={(e) => setEntryPrice(e.target.value)} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">{t('journal.form.exitPrice')}</label>
-              <Input 
-                type="number" 
-                placeholder="0.00" 
-                value={exitPrice} 
-                onChange={(e) => setExitPrice(e.target.value)} 
-              />
+              <Input type="number" placeholder="0.00" value={exitPrice} onChange={(e) => setExitPrice(e.target.value)} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">{t('journal.form.pnl')}</label>
-              <Input 
-                type="number" 
-                placeholder="0.00" 
-                value={pnl} 
-                onChange={(e) => setPnl(e.target.value)} 
-              />
+              <Input type="number" placeholder="0.00" value={pnl} onChange={(e) => setPnl(e.target.value)} />
             </div>
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium">{t('journal.form.notes')}</label>
-            <Textarea 
-              placeholder={t('journal.form.notesPlaceholder')}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
+            <Textarea placeholder={t('journal.form.notesPlaceholder')} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium flex justify-between">
               <span>{t('journal.form.screenshots')}</span>
-              <input type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" id="file-input" />
-              <Button variant="outline" size="sm" onClick={() => document.getElementById('file-input')?.click()}>
+              <input type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" id="edit-file-input" />
+              <Button variant="outline" size="sm" onClick={() => document.getElementById('edit-file-input')?.click()}>
                 {t('journal.form.uploadScreenshots')}
               </Button>
             </label>
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 flex flex-col items-center justify-center min-h-[100px] bg-muted/50 w-full">
-              {images.length > 0 ? (
-                <div className="grid grid-cols-3 gap-2 w-full">
-                  {images.map((img, idx) => (
-                    <div key={idx} className="relative">
-                      <img src={img} alt={t('journal.previewAlt')} className="h-[100px] w-full object-cover rounded" />
-                      <button className="absolute top-1 right-1 bg-destructive/80 text-white rounded p-1" onClick={() => setImages((prev) => prev.filter((_, i) => i !== idx))}>
-                        <X className="w-3 h-3" />
-                      </button>
+            <div className="grid grid-cols-3 gap-3">
+              {existingFiles.map((fn) => (
+                <div key={fn} className="relative">
+                  {existingPreviews[fn] ? (
+                    <img src={existingPreviews[fn]} alt={t('journal.previewAlt')} className="h-[100px] w-full object-cover rounded" />
+                  ) : (
+                    <div className="h-[100px] w-full bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                      {fn}
                     </div>
-                  ))}
+                  )}
+                  <button className="absolute top-1 right-1 bg-destructive/80 text-white rounded p-1" onClick={() => removeExisting(fn)}>
+                    <X className="w-3 h-3" />
+                  </button>
                 </div>
-              ) : (
+              ))}
+              {newImages.map((img, idx) => (
+                <div key={`new-${idx}`} className="relative">
+                  <img src={img} alt={t('journal.previewAlt')} className="h-[100px] w-full object-cover rounded" />
+                  <button className="absolute top-1 right-1 bg-destructive/80 text-white rounded p-1" onClick={() => removeNew(idx)}>
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              {existingFiles.length === 0 && newImages.length === 0 && (
                 <div className="flex flex-col items-center text-muted-foreground text-xs">
                   <ImagePlus className="w-8 h-8 mb-2 opacity-50" />
                   <span>{t('journal.form.pasteHint')}</span>
@@ -241,7 +241,7 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t('settings.cancel')}</Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? t('journal.saving') : t('journal.save')}
+            {isSubmitting ? t('journal.updating') : t('journal.update')}
           </Button>
         </DialogFooter>
       </DialogContent>
