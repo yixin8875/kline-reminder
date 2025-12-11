@@ -7,6 +7,8 @@ import { randomUUID } from 'crypto'
 class DatabaseService {
   private tasksDb: Datastore<any>
   private journalDb: Datastore<any>
+  private instrumentsDb: Datastore<any>
+  private accountsDb: Datastore<any>
   private imagesDir: string
 
   constructor() {
@@ -21,6 +23,18 @@ class DatabaseService {
 
     this.journalDb = Datastore.create({
       filename: path.join(userDataPath, 'journal.db'),
+      autoload: true,
+      timestampData: true
+    })
+
+    this.instrumentsDb = Datastore.create({
+      filename: path.join(userDataPath, 'instruments.db'),
+      autoload: true,
+      timestampData: true
+    })
+
+    this.accountsDb = Datastore.create({
+      filename: path.join(userDataPath, 'accounts.db'),
       autoload: true,
       timestampData: true
     })
@@ -85,6 +99,29 @@ class DatabaseService {
 
   // --- Journal Operations ---
 
+  private computeUsdPnl(entry: any, instrument: any): number {
+    if (!instrument) return 0
+    const pv = Number(instrument.pointValueUSD || 0)
+    let points = 0
+    if (typeof entry.pnl === 'number') {
+      points = Number(entry.pnl || 0)
+    } else if (typeof entry.entryPrice === 'number' && typeof entry.exitPrice === 'number') {
+      const entryPrice = Number(entry.entryPrice)
+      const exitPrice = Number(entry.exitPrice)
+      points = entry.direction === 'Long' ? (exitPrice - entryPrice) : (entryPrice - exitPrice)
+    }
+    const usd = points * pv
+    return Number.isFinite(usd) ? Number(usd.toFixed(2)) : 0
+  }
+
+  private async adjustAccountBalance(accountId: string, delta: number): Promise<void> {
+    if (!accountId || !Number.isFinite(delta)) return
+    const acc = await this.accountsDb.findOne({ _id: accountId })
+    if (!acc) return
+    const newBal = Number((Number(acc.balance || 0) + delta).toFixed(2))
+    await this.accountsDb.update({ _id: accountId }, { $set: { balance: newBal } }, {})
+  }
+
   async createJournalEntry(entry: any) {
     if (entry.images && Array.isArray(entry.images) && entry.images.length > 0) {
       const filenames: string[] = []
@@ -99,7 +136,20 @@ class DatabaseService {
       entry.imageFileName = filename
       delete entry.image
     }
-    return await this.journalDb.insert(entry)
+    let instrument: any = null
+    if (entry.instrumentId) {
+      instrument = await this.instrumentsDb.findOne({ _id: entry.instrumentId })
+    }
+    const usdPnl = this.computeUsdPnl(entry, instrument)
+    entry.usdPnl = usdPnl
+    const created = await this.journalDb.insert(entry)
+    if (entry.accountId && entry.exitPrice != null) {
+      const shouldAdjust = entry.status && ['Closed', 'Win', 'Loss'].includes(entry.status)
+      if (shouldAdjust) {
+        await this.adjustAccountBalance(entry.accountId, usdPnl)
+      }
+    }
+    return created
   }
 
   async getJournalEntries() {
@@ -116,6 +166,14 @@ class DatabaseService {
         }
       } else if (entry.imageFileName) {
         await this.deleteImageFromDisk(entry.imageFileName)
+      }
+      if (entry.accountId && entry.exitPrice != null) {
+        const shouldAdjust = entry.status && ['Closed', 'Win', 'Loss'].includes(entry.status)
+        if (shouldAdjust) {
+          const instrument = entry.instrumentId ? await this.instrumentsDb.findOne({ _id: entry.instrumentId }) : null
+          const usdPnl = typeof entry.usdPnl === 'number' ? entry.usdPnl : this.computeUsdPnl(entry, instrument)
+          await this.adjustAccountBalance(entry.accountId, -usdPnl)
+        }
       }
     }
     return await this.journalDb.remove({ _id: id }, {})
@@ -166,7 +224,72 @@ class DatabaseService {
       $set.imageFileName = undefined
     }
 
-    return await this.journalDb.update({ _id: id }, { $set }, {})
+    let newUsdPnl = existing.usdPnl || 0
+    let oldUsdPnl = existing.usdPnl || 0
+    const newInstrumentId = $set.instrumentId != null ? $set.instrumentId : existing.instrumentId
+    const instrument = newInstrumentId ? await this.instrumentsDb.findOne({ _id: newInstrumentId }) : null
+    const merged = { ...existing, ...$set }
+    newUsdPnl = this.computeUsdPnl(merged, instrument)
+    $set.usdPnl = newUsdPnl
+
+    const res = await this.journalDb.update({ _id: id }, { $set }, {})
+
+    const oldAccountId = existing.accountId
+    const newAccountId = merged.accountId
+    const hadExit = existing.exitPrice != null && existing.status && ['Closed', 'Win', 'Loss'].includes(existing.status)
+    const hasExit = merged.exitPrice != null && merged.status && ['Closed', 'Win', 'Loss'].includes(merged.status)
+    if (hadExit) {
+      if (oldAccountId) {
+        await this.adjustAccountBalance(oldAccountId, -oldUsdPnl)
+      }
+    }
+    if (hasExit) {
+      if (newAccountId) {
+        await this.adjustAccountBalance(newAccountId, newUsdPnl)
+      }
+    }
+
+    return res
+  }
+
+  async createInstrument(inst: any) {
+    return await this.instrumentsDb.insert(inst)
+  }
+
+  async getInstruments() {
+    return await this.instrumentsDb.find({}).sort({ name: 1 })
+  }
+
+  async updateInstrument(id: string, update: any) {
+    return await this.instrumentsDb.update({ _id: id }, { $set: update }, {})
+  }
+
+  async deleteInstrument(id: string) {
+    const usedCount = await this.journalDb.count({ instrumentId: id })
+    if (usedCount > 0) {
+      throw new Error('INSTRUMENT_IN_USE')
+    }
+    return await this.instrumentsDb.remove({ _id: id }, {})
+  }
+
+  async createAccount(acc: any) {
+    return await this.accountsDb.insert(acc)
+  }
+
+  async getAccounts() {
+    return await this.accountsDb.find({}).sort({ name: 1 })
+  }
+
+  async updateAccount(id: string, update: any) {
+    return await this.accountsDb.update({ _id: id }, { $set: update }, {})
+  }
+
+  async deleteAccount(id: string) {
+    const usedCount = await this.journalDb.count({ accountId: id })
+    if (usedCount > 0) {
+      throw new Error('ACCOUNT_IN_USE')
+    }
+    return await this.accountsDb.remove({ _id: id }, {})
   }
 }
 

@@ -74,6 +74,33 @@
     "confirmDelete": "Delete",
     "cancel": "Cancel"
   },
+  "instrument": {
+    "title": "Instrument Management",
+    "name": "Instrument Name",
+    "pointValue": "Point Value (USD)",
+    "add": "Add Instrument",
+    "edit": "Edit Instrument",
+    "delete": "Delete",
+    "cannotDeleteInUse": "Instrument is used by trade logs and cannot be deleted",
+    "select": "Select Instrument",
+    "manage": "Manage Instruments"
+  },
+  "account": {
+    "title": "Account Management",
+    "name": "Account Name",
+    "namePlaceholder": "Enter account name",
+    "balance": "Account Balance",
+    "add": "Add Account",
+    "edit": "Edit Account",
+    "delete": "Delete",
+    "manage": "Manage Accounts",
+    "select": "Select Account",
+    "selectPlaceholder": "Please select an account",
+    "cannotDeleteInUse": "Account has trade logs and cannot be deleted",
+    "table": {
+      "account": "Account"
+    }
+  },
   "journal": {
     "totalTrades": "Total Trades",
     "winRate": "Win Rate",

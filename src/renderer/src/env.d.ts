@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 
 import { TradeLog, CreateTradeLogDTO } from './types/journal'
+import { Instrument } from './types/instrument'
+import { Account } from './types/account'
 
 declare global {
   interface Window {
@@ -25,6 +27,16 @@ declare global {
       getTasks: () => Promise<any[]>
       updateTask: (id: string, update: any) => Promise<number>
       deleteTask: (id: string) => Promise<number>
+
+      createInstrument: (inst: { name: string; pointValueUSD: number }) => Promise<Instrument>
+      getInstruments: () => Promise<Instrument[]>
+      updateInstrument: (id: string, update: Partial<Instrument>) => Promise<number>
+      deleteInstrument: (id: string) => Promise<number>
+
+      createAccount: (acc: { name: string; balance: number }) => Promise<Account>
+      getAccounts: () => Promise<Account[]>
+      updateAccount: (id: string, update: Partial<Account>) => Promise<number>
+      deleteAccount: (id: string) => Promise<number>
 
       resizeWindow: (width: number, height: number) => void
     }

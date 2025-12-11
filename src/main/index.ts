@@ -104,6 +104,18 @@ ipcMain.handle('task:list', () => dbService.getTasks())
 ipcMain.handle('task:update', (_, id, update) => dbService.updateTask(id, update))
 ipcMain.handle('task:delete', (_, id) => dbService.deleteTask(id))
 
+// IPC for Instruments
+ipcMain.handle('instrument:create', (_, inst) => dbService.createInstrument(inst))
+ipcMain.handle('instrument:list', () => dbService.getInstruments())
+ipcMain.handle('instrument:update', (_, id, update) => dbService.updateInstrument(id, update))
+ipcMain.handle('instrument:delete', (_, id) => dbService.deleteInstrument(id))
+
+// IPC for Accounts
+ipcMain.handle('account:create', (_, acc) => dbService.createAccount(acc))
+ipcMain.handle('account:list', () => dbService.getAccounts())
+ipcMain.handle('account:update', (_, id, update) => dbService.updateAccount(id, update))
+ipcMain.handle('account:delete', (_, id) => dbService.deleteAccount(id))
+
 // IPC for Window Resizing
 ipcMain.on('resize-window', (event, width, height) => {
   const webContents = event.sender

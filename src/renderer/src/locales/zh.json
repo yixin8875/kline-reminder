@@ -74,6 +74,33 @@
     "confirmDelete": "删除",
     "cancel": "取消"
   },
+  "instrument": {
+    "title": "标的管理",
+    "name": "标的名称",
+    "pointValue": "每点美元",
+    "add": "新增标的",
+    "edit": "编辑标的",
+    "delete": "删除",
+    "cannotDeleteInUse": "该标的已被交易日志使用，无法删除",
+    "select": "选择标的",
+    "manage": "管理标的"
+  },
+  "account": {
+    "title": "账户管理",
+    "name": "账户名称",
+    "namePlaceholder": "输入账户名称",
+    "balance": "账户金额",
+    "add": "新增账户",
+    "edit": "编辑账户",
+    "delete": "删除",
+    "manage": "管理账户",
+    "select": "选择账户",
+    "selectPlaceholder": "请选择账户",
+    "cannotDeleteInUse": "该账户已有交易日志，无法删除",
+    "table": {
+      "account": "账户"
+    }
+  },
   "journal": {
     "totalTrades": "总笔数",
     "winRate": "胜率",

@@ -8,25 +8,36 @@ import { Plus, Trash2, Camera, Pencil, ChevronLeft, ChevronRight } from 'lucide-
 import { cn } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
 import { EditTradeModal } from './EditTradeModal'
+import { useAccountStore } from '../store/useAccountStore'
 
 export function JournalView(): JSX.Element {
   const { t } = useTranslation()
   const { logs, fetchLogs, deleteLog, getLogImage, isLoading } = useJournalStore()
+  const { accounts, fetchAccounts } = useAccountStore()
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [previewImages, setPreviewImages] = useState<string[]>([])
   const [previewIndex, setPreviewIndex] = useState(0)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedLog, setSelectedLog] = useState<any>(null)
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchLogs()
+    fetchAccounts()
   }, [])
 
-  const handleDelete = async (id: string) => {
-    if (confirm(t('journal.confirmDelete'))) {
-      await deleteLog(id)
-    }
+  const handleDeleteClick = (id: string) => {
+    setDeleteTargetId(id)
+    setIsDeleteConfirmOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return
+    await deleteLog(deleteTargetId)
+    setIsDeleteConfirmOpen(false)
+    setDeleteTargetId(null)
   }
 
   const handleViewImages = async (filenames: string[]) => {
@@ -82,6 +93,7 @@ export function JournalView(): JSX.Element {
             <TableRow>
               <TableHead className="w-[100px]">{t('journal.table.date')}</TableHead>
               <TableHead>{t('journal.table.symbol')}</TableHead>
+              <TableHead>{t('account.table.account')}</TableHead>
               <TableHead>{t('journal.table.direction')}</TableHead>
               <TableHead>{t('journal.table.entryExit')}</TableHead>
               <TableHead>{t('journal.table.pnl')}</TableHead>
@@ -103,6 +115,7 @@ export function JournalView(): JSX.Element {
                     {new Date(log.date).toLocaleDateString()}
                   </TableCell>
                   <TableCell>{log.symbol}</TableCell>
+                  <TableCell>{accounts.find(a => (a.id || a._id) === log.accountId)?.name || '-'}</TableCell>
                   <TableCell>
                     <span className={cn(
                       "px-2 py-1 rounded-full text-xs font-medium",
@@ -166,7 +179,7 @@ export function JournalView(): JSX.Element {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        onClick={() => handleDelete(log.id || log._id!)}
+                        onClick={() => handleDeleteClick(log.id || log._id!)}
                         className="text-muted-foreground hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -209,6 +222,17 @@ export function JournalView(): JSX.Element {
                </div>
              </div>
            )}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <div className="space-y-4">
+            <div className="text-sm">{t('journal.confirmDelete')}</div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsDeleteConfirmOpen(false)}>{t('settings.cancel')}</Button>
+              <Button variant="destructive" onClick={confirmDelete}>{t('confirm.confirmDelete')}</Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

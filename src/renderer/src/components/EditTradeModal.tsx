@@ -7,6 +7,10 @@ import { useJournalStore } from '../store/useJournalStore'
 import { TradeDirection, TradeStatus, TradeLog } from '../types/journal'
 import { useTranslation } from 'react-i18next'
 import { ImagePlus, X } from 'lucide-react'
+import { useInstrumentStore } from '../store/useInstrumentStore'
+import { InstrumentManagerModal } from './InstrumentManagerModal'
+import { useAccountStore } from '../store/useAccountStore'
+import { AccountManagerModal } from './AccountManagerModal'
 
 interface EditTradeModalProps {
   open: boolean
@@ -17,9 +21,12 @@ interface EditTradeModalProps {
 export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps): JSX.Element {
   const { updateLog, getLogImage } = useJournalStore()
   const { t } = useTranslation()
+  const { instruments, fetchInstruments } = useInstrumentStore()
+  const { accounts, fetchAccounts } = useAccountStore()
 
   const [date, setDate] = useState('')
-  const [symbol, setSymbol] = useState('')
+  const [selectedInstrumentId, setSelectedInstrumentId] = useState<string>('')
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('')
   const [direction, setDirection] = useState<TradeDirection>('Long')
   const [entryPrice, setEntryPrice] = useState('')
   const [exitPrice, setExitPrice] = useState('')
@@ -31,11 +38,14 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
   const [existingPreviews, setExistingPreviews] = useState<Record<string, string>>({})
   const [removedFiles, setRemovedFiles] = useState<string[]>([])
   const [newImages, setNewImages] = useState<string[]>([])
+  const [isInstrumentModalOpen, setIsInstrumentModalOpen] = useState(false)
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false)
 
   useEffect(() => {
     if (log) {
       setDate(new Date(log.date).toISOString().split('T')[0])
-      setSymbol(log.symbol)
+      setSelectedInstrumentId(log.instrumentId || '')
+      setSelectedAccountId(log.accountId || '')
       setDirection(log.direction)
       setEntryPrice(String(log.entryPrice))
       setExitPrice(log.exitPrice != null ? String(log.exitPrice) : '')
@@ -50,6 +60,13 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
       setNewImages([])
     }
   }, [log])
+
+  useEffect(() => {
+    if (open) {
+      fetchInstruments()
+      fetchAccounts()
+    }
+  }, [open, fetchInstruments, fetchAccounts])
 
   useEffect(() => {
     if (entryPrice && exitPrice && !isNaN(Number(entryPrice)) && !isNaN(Number(exitPrice))) {
@@ -111,9 +128,12 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
     setIsSubmitting(true)
     try {
       const id = log.id || log._id!
+      const inst = instruments.find((i) => (i.id || i._id) === (selectedInstrumentId || log.instrumentId))
       await updateLog(id, {
         date: new Date(date).getTime(),
-        symbol: symbol.toUpperCase(),
+        symbol: inst ? inst.name.toUpperCase() : log.symbol,
+        instrumentId: selectedInstrumentId || log.instrumentId,
+        accountId: selectedAccountId || log.accountId,
         direction,
         entryPrice: Number(entryPrice),
         exitPrice: exitPrice ? Number(exitPrice) : undefined,
@@ -145,8 +165,47 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('journal.form.symbol')}</label>
-              <Input placeholder={t('journal.form.symbolPlaceholder')} value={symbol} onChange={(e) => setSymbol(e.target.value)} />
+              <label className="text-sm font-medium flex items-center justify-between">
+                <span>{t('instrument.select')}</span>
+                <Button variant="outline" size="sm" onClick={() => setIsInstrumentModalOpen(true)}>
+                  {t('instrument.manage')}
+                </Button>
+              </label>
+              <select
+                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={selectedInstrumentId}
+                onChange={(e) => setSelectedInstrumentId(e.target.value)}
+              >
+                <option value="">{t('journal.form.symbolPlaceholder')}</option>
+                {instruments.map((inst) => (
+                  <option key={inst.id || inst._id} value={inst.id || inst._id!}>
+                    {inst.name} ({inst.pointValueUSD})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center justify-between">
+                <span>{t('account.select')}</span>
+                <Button variant="outline" size="sm" onClick={() => setIsAccountModalOpen(true)}>
+                  {t('account.manage')}
+                </Button>
+              </label>
+              <select 
+                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={selectedAccountId}
+                onChange={(e) => setSelectedAccountId(e.target.value)}
+              >
+                <option value="">{t('account.selectPlaceholder')}</option>
+                {accounts.map((acc) => (
+                  <option key={acc.id || acc._id} value={acc.id || acc._id!}>
+                    {acc.name} (${acc.balance.toFixed(2)})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -245,6 +304,8 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
           </Button>
         </DialogFooter>
       </DialogContent>
+      <InstrumentManagerModal open={isInstrumentModalOpen} onOpenChange={setIsInstrumentModalOpen} />
+      <AccountManagerModal open={isAccountModalOpen} onOpenChange={setIsAccountModalOpen} />
     </Dialog>
   )
 }

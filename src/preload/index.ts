@@ -18,6 +18,18 @@ const api = {
   updateTask: (id: string, update: any): Promise<number> => ipcRenderer.invoke('task:update', id, update),
   deleteTask: (id: string): Promise<number> => ipcRenderer.invoke('task:delete', id),
 
+  // Instrument API
+  createInstrument: (inst: any): Promise<any> => ipcRenderer.invoke('instrument:create', inst),
+  getInstruments: (): Promise<any[]> => ipcRenderer.invoke('instrument:list'),
+  updateInstrument: (id: string, update: any): Promise<number> => ipcRenderer.invoke('instrument:update', id, update),
+  deleteInstrument: (id: string): Promise<number> => ipcRenderer.invoke('instrument:delete', id),
+
+  // Account API
+  createAccount: (acc: any): Promise<any> => ipcRenderer.invoke('account:create', acc),
+  getAccounts: (): Promise<any[]> => ipcRenderer.invoke('account:list'),
+  updateAccount: (id: string, update: any): Promise<number> => ipcRenderer.invoke('account:update', id, update),
+  deleteAccount: (id: string): Promise<number> => ipcRenderer.invoke('account:delete', id),
+
   resizeWindow: (width: number, height: number): void => ipcRenderer.send('resize-window', width, height)
 }
 
