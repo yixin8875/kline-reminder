@@ -174,6 +174,13 @@
     "winRate": "胜率",
     "netPoints": "净点数",
     "netUsd": "净美元",
-    "avgRR": "平均盈亏比"
+    "avgRR": "平均盈亏比",
+    "range": "统计范围",
+    "thisWeek": "本周",
+    "thisMonth": "本月",
+    "thisYear": "本年",
+    "custom": "自定义",
+    "from": "开始日期",
+    "to": "结束日期"
   }
 }

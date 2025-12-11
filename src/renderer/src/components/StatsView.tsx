@@ -3,6 +3,8 @@ import { useJournalStore } from '../store/useJournalStore'
 import { useAccountStore } from '../store/useAccountStore'
 import { useTranslation } from 'react-i18next'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
 import { cn } from '../utils/cn'
 
 export function StatsView(): JSX.Element {
@@ -10,15 +12,56 @@ export function StatsView(): JSX.Element {
   const { logs, fetchLogs, isLoading } = useJournalStore()
   const { accounts, fetchAccounts } = useAccountStore()
   const [accountId, setAccountId] = useState<string>('')
+  const [rangeMode, setRangeMode] = useState<'week' | 'month' | 'year' | 'custom'>('week')
+  const [fromDate, setFromDate] = useState<string>('')
+  const [toDate, setToDate] = useState<string>('')
 
   useEffect(() => {
     fetchLogs()
     fetchAccounts()
   }, [])
 
+  const dateRange = useMemo(() => {
+    const now = new Date()
+    if (rangeMode === 'week') {
+      const d = now.getDay() || 7
+      const start = new Date(now)
+      start.setDate(now.getDate() - (d - 1))
+      start.setHours(0, 0, 0, 0)
+      const end = new Date(now)
+      end.setHours(23, 59, 59, 999)
+      return { start: start.getTime(), end: end.getTime() }
+    }
+    if (rangeMode === 'month') {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1)
+      start.setHours(0, 0, 0, 0)
+      const end = new Date(now)
+      end.setHours(23, 59, 59, 999)
+      return { start: start.getTime(), end: end.getTime() }
+    }
+    if (rangeMode === 'year') {
+      const start = new Date(now.getFullYear(), 0, 1)
+      start.setHours(0, 0, 0, 0)
+      const end = new Date(now)
+      end.setHours(23, 59, 59, 999)
+      return { start: start.getTime(), end: end.getTime() }
+    }
+    if (rangeMode === 'custom') {
+      if (fromDate && toDate) {
+        const start = new Date(fromDate)
+        start.setHours(0, 0, 0, 0)
+        const end = new Date(toDate)
+        end.setHours(23, 59, 59, 999)
+        return { start: start.getTime(), end: end.getTime() }
+      }
+    }
+    return { start: 0, end: Number.MAX_SAFE_INTEGER }
+  }, [rangeMode, fromDate, toDate])
+
   const filtered = useMemo(() => {
-    return accountId ? logs.filter((l) => l.accountId === accountId) : logs
-  }, [logs, accountId])
+    const base = accountId ? logs.filter((l) => l.accountId === accountId) : logs
+    return base.filter((l) => l.date >= dateRange.start && l.date <= dateRange.end)
+  }, [logs, accountId, dateRange])
 
   const winLoss = filtered.filter((l) => l.status === 'Win' || l.status === 'Loss')
   const wins = winLoss.filter((l) => l.status === 'Win').length
@@ -35,7 +78,7 @@ export function StatsView(): JSX.Element {
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex items-center gap-4">
+      <div className="flex items-end gap-4 flex-wrap">
         <div className="space-y-1">
           <label className="text-sm font-medium">{t('stats.selectAccount')}</label>
           <select
@@ -51,6 +94,29 @@ export function StatsView(): JSX.Element {
             ))}
           </select>
         </div>
+
+        <div className="space-y-1">
+          <label className="text-sm font-medium">{t('stats.range')}</label>
+          <div className="flex items-center gap-2">
+            <Button variant={rangeMode === 'week' ? 'default' : 'outline'} size="sm" onClick={() => setRangeMode('week')}>{t('stats.thisWeek')}</Button>
+            <Button variant={rangeMode === 'month' ? 'default' : 'outline'} size="sm" onClick={() => setRangeMode('month')}>{t('stats.thisMonth')}</Button>
+            <Button variant={rangeMode === 'year' ? 'default' : 'outline'} size="sm" onClick={() => setRangeMode('year')}>{t('stats.thisYear')}</Button>
+            <Button variant={rangeMode === 'custom' ? 'default' : 'outline'} size="sm" onClick={() => setRangeMode('custom')}>{t('stats.custom')}</Button>
+          </div>
+        </div>
+
+        {rangeMode === 'custom' && (
+          <div className="flex items-end gap-2">
+            <div className="space-y-1">
+              <label className="text-sm font-medium">{t('stats.from')}</label>
+              <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">{t('stats.to')}</label>
+              <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-4 gap-4">
