@@ -15,13 +15,13 @@ jobs:
             build_script: build:mac
             artifact_glob: |
               dist/*.dmg
-              dist/*.yml
+              dist/latest*.yml
               dist/*.blockmap
           - os: windows-latest
             build_script: build:win
             artifact_glob: |
               dist/*.exe
-              dist/*.yml
+              dist/latest*.yml
               dist/*.blockmap
         
     runs-on: ${{ matrix.os }}

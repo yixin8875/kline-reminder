@@ -38,7 +38,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "boohee",
+        "owner": "yixin8875",
         "repo": "kline-reminder"
       }
     ],
