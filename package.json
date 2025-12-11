@@ -1,6 +1,6 @@
 {
   "name": "k-line-waker",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "description": "A K-Line period countdown reminder tool for traders",
   "main": "./out/main/index.js",
   "author": "example.com",
@@ -84,6 +84,7 @@
     "@radix-ui/react-dialog": "^1.1.15",
     "clsx": "^2.1.1",
     "electron-updater": "^6.6.2",
+    "exceljs": "^4.4.0",
     "i18next": "^25.7.1",
     "i18next-browser-languagedetector": "^8.2.0",
     "lucide-react": "^0.454.0",

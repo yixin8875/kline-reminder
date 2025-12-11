@@ -184,6 +184,9 @@
     "thisYear": "本年",
     "custom": "自定义",
     "from": "开始日期",
-    "to": "结束日期"
+    "to": "结束日期",
+    "exportExcel": "导出Excel",
+    "exportSuccess": "导出成功",
+    "exportFailed": "导出失败"
   }
 }

@@ -181,7 +181,10 @@
     "thisYear": "This Year",
     "custom": "Custom",
     "from": "From",
-    "to": "To"
+    "to": "To",
+    "exportExcel": "Export Excel",
+    "exportSuccess": "Export succeeded",
+    "exportFailed": "Export failed"
   },
   "tts": {
     "alert": "Attention. {{symbol}} {{timeframe}} is closing in {{seconds}} seconds."

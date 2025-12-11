@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -177,6 +177,83 @@ try {
     mainWindow?.webContents.send('update:downloaded')
   })
 } catch {}
+
+// Export Journal to Excel
+ipcMain.handle('journal:export-excel', async (_evt, payload: { accountId?: string; start?: number; end?: number }) => {
+  const ExcelJS = require('exceljs')
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet('Trades')
+
+  ws.columns = [
+    { header: 'Date', key: 'date', width: 14 },
+    { header: 'Symbol', key: 'symbol', width: 12 },
+    { header: 'Direction', key: 'direction', width: 10 },
+    { header: 'Entry', key: 'entryPrice', width: 10 },
+    { header: 'Exit', key: 'exitPrice', width: 10 },
+    { header: 'Stop Loss', key: 'stopLoss', width: 10 },
+    { header: 'Position', key: 'positionSize', width: 10 },
+    { header: 'PnL (pts)', key: 'pnl', width: 10 },
+    { header: 'PnL (USD)', key: 'usdPnl', width: 12 },
+    { header: 'R/R', key: 'riskReward', width: 8 },
+    { header: 'Status', key: 'status', width: 10 },
+    { header: 'Notes', key: 'notes', width: 30 }
+  ]
+
+  const { accountId, start, end } = payload || {}
+  const account = accountId ? await dbService.getAccountById(accountId) : null
+  const logs = await dbService.getJournalEntriesByAccountAndRange(accountId, start, end)
+
+  let rowIndex = 2
+  for (const log of logs) {
+    ws.addRow({
+      date: new Date(log.date).toLocaleString(),
+      symbol: log.symbol,
+      direction: log.direction,
+      entryPrice: log.entryPrice,
+      exitPrice: log.exitPrice ?? '',
+      stopLoss: log.stopLoss ?? '',
+      positionSize: log.positionSize ?? '',
+      pnl: log.pnl ?? '',
+      usdPnl: typeof log.usdPnl === 'number' ? Number(log.usdPnl).toFixed(2) : '',
+      riskReward: typeof log.riskReward === 'number' ? Number(log.riskReward).toFixed(2) : '',
+      status: log.status,
+      notes: log.notes || ''
+    })
+
+    const images: string[] = log.imageFileNames || (log.imageFileName ? [log.imageFileName] : [])
+    let imageCol = 13
+    for (const fn of images) {
+      try {
+        const dataUrl = await dbService.getImage(fn)
+        const base64 = String(dataUrl).replace(/^data:image\/[a-zA-Z]+;base64,/, '')
+        const imgId = wb.addImage({ base64, extension: 'png' })
+        ws.addImage(imgId, {
+          tl: { col: imageCol, row: rowIndex - 1 },
+          ext: { width: 240, height: 160 }
+        })
+        imageCol += 6
+      } catch (e) {
+        console.error('Embed image failed', e)
+      }
+    }
+    rowIndex++
+  }
+
+  const defaultNameParts = [
+    'trades',
+    account?.name ? account.name.replace(/\s+/g, '_') : 'all',
+    start ? new Date(start).toISOString().split('T')[0] : 'start',
+    end ? new Date(end).toISOString().split('T')[0] : 'end'
+  ]
+  const { filePath, canceled } = await dialog.showSaveDialog({
+    title: 'Export Trades',
+    defaultPath: `${defaultNameParts.filter(Boolean).join('-')}.xlsx`,
+    filters: [{ name: 'Excel', extensions: ['xlsx'] }]
+  })
+  if (canceled || !filePath) return { success: false }
+  await wb.xlsx.writeFile(filePath)
+  return { success: true, path: filePath }
+})
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

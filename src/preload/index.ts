@@ -61,6 +61,10 @@ export const updates = {
   }
 }
 
+export const exportsApi = {
+  exportJournalExcel: (payload: { accountId?: string; start?: number; end?: number }): Promise<{ success: boolean; path?: string }> => ipcRenderer.invoke('journal:export-excel', payload)
+}
+
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.
@@ -70,6 +74,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('api', api)
     contextBridge.exposeInMainWorld('events', events)
     contextBridge.exposeInMainWorld('updates', updates)
+    contextBridge.exposeInMainWorld('exports', exportsApi)
   } catch (error) {
     console.error(error)
   }
@@ -82,4 +87,6 @@ if (process.contextIsolated) {
   window.events = events
   // @ts-ignore (define in dts)
   window.updates = updates
+  // @ts-ignore (define in dts)
+  window.exports = exportsApi
 }

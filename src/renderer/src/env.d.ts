@@ -52,5 +52,8 @@ declare global {
       onProgress: (cb: (progress: any) => void) => void
       offAll: () => void
     }
+    exports: {
+      exportJournalExcel: (payload: { accountId?: string; start?: number; end?: number }) => Promise<{ success: boolean; path?: string }>
+    }
   }
 }

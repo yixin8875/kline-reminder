@@ -117,6 +117,32 @@ export function StatsView(): JSX.Element {
             </div>
           </div>
         )}
+
+        <div className="ml-auto mb-1">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              const payload: { accountId?: string; start?: number; end?: number } = {}
+              if (accountId) payload.accountId = accountId
+              if (rangeMode === 'custom' && fromDate && toDate) {
+                const start = new Date(fromDate); start.setHours(0,0,0,0)
+                const end = new Date(toDate); end.setHours(23,59,59,999)
+                payload.start = start.getTime()
+                payload.end = end.getTime()
+              } else {
+                payload.start = dateRange.start
+                payload.end = dateRange.end
+              }
+              const res = await window.exports.exportJournalExcel(payload)
+              if (res?.success) {
+                // simple notification
+                new Notification(t('stats.exportSuccess'), { body: res.path || '' })
+              } else {
+                new Notification(t('stats.exportFailed'))
+              }
+            }}
+          >{t('stats.exportExcel')}</Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-4 gap-4">

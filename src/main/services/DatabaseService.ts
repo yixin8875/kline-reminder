@@ -181,6 +181,21 @@ class DatabaseService {
     return await this.journalDb.find({}).sort({ date: -1 })
   }
 
+  async getJournalEntriesByAccountAndRange(accountId?: string, start?: number, end?: number) {
+    const query: any = {}
+    if (accountId) query.accountId = accountId
+    if (typeof start === 'number' || typeof end === 'number') {
+      query.date = {}
+      if (typeof start === 'number') query.date.$gte = start
+      if (typeof end === 'number') query.date.$lte = end
+    }
+    return await this.journalDb.find(query).sort({ date: 1 })
+  }
+
+  async getAccountById(id: string) {
+    return await this.accountsDb.findOne({ _id: id })
+  }
+
   async deleteJournalEntry(id: string) {
     const entry: any = await this.journalDb.findOne({ _id: id })
     if (entry) {
