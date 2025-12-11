@@ -17,11 +17,6 @@ jobs:
           - os: windows-latest
             build_script: build:win
             artifact_glob: dist/*.exe
-          - os: ubuntu-latest
-            build_script: build:linux
-            artifact_glob: |
-              dist/*.AppImage
-              dist/*.deb
         
     runs-on: ${{ matrix.os }}
     

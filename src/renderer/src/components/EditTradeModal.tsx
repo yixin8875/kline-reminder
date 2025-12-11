@@ -30,8 +30,10 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
   const [direction, setDirection] = useState<TradeDirection>('Long')
   const [entryPrice, setEntryPrice] = useState('')
   const [exitPrice, setExitPrice] = useState('')
+  const [stopLoss, setStopLoss] = useState('')
   const [status, setStatus] = useState<TradeStatus>('Closed')
   const [pnl, setPnl] = useState('')
+  const [riskReward, setRiskReward] = useState('')
   const [notes, setNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [existingFiles, setExistingFiles] = useState<string[]>([])
@@ -49,8 +51,10 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
       setDirection(log.direction)
       setEntryPrice(String(log.entryPrice))
       setExitPrice(log.exitPrice != null ? String(log.exitPrice) : '')
+      setStopLoss(log.stopLoss != null ? String(log.stopLoss) : '')
       setStatus(log.status)
       setPnl(log.pnl != null ? String(log.pnl) : '')
+      setRiskReward(log.riskReward != null ? String(log.riskReward) : '')
       setNotes(log.notes || '')
       const names = (log as any).imageFileNames && (log as any).imageFileNames.length > 0
         ? (log as any).imageFileNames
@@ -81,6 +85,19 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
       setPnl(calculatedPnl.toFixed(2))
     }
   }, [entryPrice, exitPrice, direction])
+
+  useEffect(() => {
+    if (entryPrice && exitPrice && stopLoss && !isNaN(Number(entryPrice)) && !isNaN(Number(exitPrice)) && !isNaN(Number(stopLoss))) {
+      const entry = Number(entryPrice)
+      const exit = Number(exitPrice)
+      const sl = Number(stopLoss)
+      const profit = Math.abs(exit - entry)
+      const risk = Math.abs(entry - sl)
+      if (risk > 0) {
+        setRiskReward((profit / risk).toFixed(2))
+      }
+    }
+  }, [entryPrice, exitPrice, stopLoss])
 
   useEffect(() => {
     const load = async () => {
@@ -137,8 +154,10 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
         direction,
         entryPrice: Number(entryPrice),
         exitPrice: exitPrice ? Number(exitPrice) : undefined,
+        stopLoss: stopLoss ? Number(stopLoss) : undefined,
         status,
         pnl: pnl ? Number(pnl) : undefined,
+        riskReward: riskReward ? Number(riskReward) : undefined,
         notes,
         images: newImages.length > 0 ? newImages : undefined,
         removeImageFileNames: removedFiles.length > 0 ? removedFiles : undefined
@@ -248,6 +267,17 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
             <div className="space-y-2">
               <label className="text-sm font-medium">{t('journal.form.pnl')}</label>
               <Input type="number" placeholder="0.00" value={pnl} onChange={(e) => setPnl(e.target.value)} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('journal.form.stopLoss')}</label>
+              <Input type="number" placeholder="0.00" value={stopLoss} onChange={(e) => setStopLoss(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('journal.form.rrr')}</label>
+              <Input type="number" placeholder="-" value={riskReward} disabled />
             </div>
           </div>
 

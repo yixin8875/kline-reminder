@@ -122,6 +122,25 @@ class DatabaseService {
     await this.accountsDb.update({ _id: accountId }, { $set: { balance: newBal } }, {})
   }
 
+  private computeRiskReward(entry: any): number | undefined {
+    if (
+      typeof entry.entryPrice === 'number' &&
+      typeof entry.exitPrice === 'number' &&
+      typeof entry.stopLoss === 'number'
+    ) {
+      const entryPrice = Number(entry.entryPrice)
+      const exitPrice = Number(entry.exitPrice)
+      const stopLoss = Number(entry.stopLoss)
+      const profit = Math.abs(exitPrice - entryPrice)
+      const risk = Math.abs(entryPrice - stopLoss)
+      if (risk > 0) {
+        const r = profit / risk
+        return Number(r.toFixed(2))
+      }
+    }
+    return undefined
+  }
+
   async createJournalEntry(entry: any) {
     if (entry.images && Array.isArray(entry.images) && entry.images.length > 0) {
       const filenames: string[] = []
@@ -142,6 +161,10 @@ class DatabaseService {
     }
     const usdPnl = this.computeUsdPnl(entry, instrument)
     entry.usdPnl = usdPnl
+    const riskReward = this.computeRiskReward(entry)
+    if (typeof riskReward === 'number') {
+      entry.riskReward = riskReward
+    }
     const created = await this.journalDb.insert(entry)
     if (entry.accountId && entry.exitPrice != null) {
       const shouldAdjust = entry.status && ['Closed', 'Win', 'Loss'].includes(entry.status)
@@ -231,6 +254,8 @@ class DatabaseService {
     const merged = { ...existing, ...$set }
     newUsdPnl = this.computeUsdPnl(merged, instrument)
     $set.usdPnl = newUsdPnl
+    const rr = this.computeRiskReward(merged)
+    $set.riskReward = rr
 
     const res = await this.journalDb.update({ _id: id }, { $set }, {})
 

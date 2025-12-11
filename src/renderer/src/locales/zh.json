@@ -113,6 +113,7 @@
       "direction": "方向",
       "entryExit": "开/平仓",
       "pnl": "盈亏",
+      "rrr": "盈亏比",
       "status": "状态",
       "actions": "操作"
     },
@@ -141,6 +142,8 @@
       "status": "状态",
       "entryPrice": "开仓价",
       "exitPrice": "平仓价",
+      "stopLoss": "止损价",
+      "rrr": "盈亏比",
       "pnl": "盈亏",
       "notes": "备注",
       "notesPlaceholder": "策略、感受、失误…",

@@ -97,6 +97,7 @@ export function JournalView(): JSX.Element {
               <TableHead>{t('journal.table.direction')}</TableHead>
               <TableHead>{t('journal.table.entryExit')}</TableHead>
               <TableHead>{t('journal.table.pnl')}</TableHead>
+              <TableHead>{t('journal.table.rrr')}</TableHead>
               <TableHead>{t('journal.table.status')}</TableHead>
               <TableHead className="text-right">{t('journal.table.actions')}</TableHead>
             </TableRow>
@@ -104,7 +105,7 @@ export function JournalView(): JSX.Element {
           <TableBody>
             {logs.length === 0 && !isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                   {t('journal.empty')}
                 </TableCell>
               </TableRow>
@@ -135,6 +136,9 @@ export function JournalView(): JSX.Element {
                     (log.pnl || 0) >= 0 ? "text-green-500" : "text-red-500"
                   )}>
                     {log.pnl ? (log.pnl > 0 ? `+${log.pnl}` : log.pnl) : '-'}
+                  </TableCell>
+                  <TableCell>
+                    {typeof log.riskReward === 'number' ? log.riskReward.toFixed(2) : '-'}
                   </TableCell>
                   <TableCell>
                      <span className={cn(

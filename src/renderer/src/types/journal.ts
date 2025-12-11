@@ -11,9 +11,11 @@ export interface TradeLog {
   direction: TradeDirection
   entryPrice: number
   exitPrice?: number
+  stopLoss?: number
   status: TradeStatus
   pnl?: number
   usdPnl?: number
+  riskReward?: number
   notes?: string
   imageFileName?: string
   imageFileNames?: string[]
@@ -27,9 +29,11 @@ export interface CreateTradeLogDTO {
   direction: TradeDirection
   entryPrice: number
   exitPrice?: number
+  stopLoss?: number
   status: TradeStatus
   pnl?: number
   usdPnl?: number
+  riskReward?: number
   notes?: string
   image?: string
   images?: string[]

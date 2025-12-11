@@ -29,8 +29,10 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
   const [direction, setDirection] = useState<TradeDirection>('Long')
   const [entryPrice, setEntryPrice] = useState('')
   const [exitPrice, setExitPrice] = useState('')
+  const [stopLoss, setStopLoss] = useState('')
   const [status, setStatus] = useState<TradeStatus>('Closed')
   const [pnl, setPnl] = useState('')
+  const [riskReward, setRiskReward] = useState('')
   const [notes, setNotes] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -53,6 +55,19 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
       setPnl(calculatedPnl.toFixed(2))
     }
   }, [entryPrice, exitPrice, direction])
+
+  useEffect(() => {
+    if (entryPrice && exitPrice && stopLoss && !isNaN(Number(entryPrice)) && !isNaN(Number(exitPrice)) && !isNaN(Number(stopLoss))) {
+      const entry = Number(entryPrice)
+      const exit = Number(exitPrice)
+      const sl = Number(stopLoss)
+      const profit = Math.abs(exit - entry)
+      const risk = Math.abs(entry - sl)
+      if (risk > 0) {
+        setRiskReward((profit / risk).toFixed(2))
+      }
+    }
+  }, [entryPrice, exitPrice, stopLoss])
 
   useEffect(() => {
     if (open) {
@@ -108,8 +123,10 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
         direction,
         entryPrice: Number(entryPrice),
         exitPrice: exitPrice ? Number(exitPrice) : undefined,
+        stopLoss: stopLoss ? Number(stopLoss) : undefined,
         status,
         pnl: pnl ? Number(pnl) : undefined,
+        riskReward: riskReward ? Number(riskReward) : undefined,
         notes,
         images: images.length > 0 ? images : undefined
       })
@@ -129,8 +146,10 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
     setDirection('Long')
     setEntryPrice('')
     setExitPrice('')
+    setStopLoss('')
     setStatus('Closed')
     setPnl('')
+    setRiskReward('')
     setNotes('')
     setImages([])
   }
@@ -250,6 +269,27 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
                 placeholder="0.00" 
                 value={pnl} 
                 onChange={(e) => setPnl(e.target.value)} 
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('journal.form.stopLoss')}</label>
+              <Input 
+                type="number" 
+                placeholder="0.00" 
+                value={stopLoss} 
+                onChange={(e) => setStopLoss(e.target.value)} 
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('journal.form.rrr')}</label>
+              <Input 
+                type="number" 
+                placeholder="-" 
+                value={riskReward} 
+                disabled 
               />
             </div>
           </div>
