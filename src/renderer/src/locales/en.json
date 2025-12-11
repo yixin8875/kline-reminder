@@ -75,6 +75,13 @@
     "confirmDelete": "Delete",
     "cancel": "Cancel"
   },
+  "updates": {
+    "checking": "Checking for updates…",
+    "downloading": "Downloading update…",
+    "downloaded": "Update downloaded, will install on restart",
+    "installNow": "Restart to Install",
+    "checkNow": "Check Updates"
+  },
   "instrument": {
     "title": "Instrument Management",
     "name": "Instrument Name",

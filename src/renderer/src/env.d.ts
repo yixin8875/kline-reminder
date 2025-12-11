@@ -44,5 +44,13 @@ declare global {
       onWindowResized: (callback: (payload: { width: number; height: number }) => void) => void
       offWindowResized: () => void
     }
+    updates: {
+      checkForUpdates: () => Promise<boolean>
+      installUpdate: () => Promise<boolean>
+      onAvailable: (cb: () => void) => void
+      onDownloaded: (cb: () => void) => void
+      onProgress: (cb: (progress: any) => void) => void
+      offAll: () => void
+    }
   }
 }

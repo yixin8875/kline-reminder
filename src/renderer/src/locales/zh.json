@@ -75,6 +75,13 @@
     "confirmDelete": "删除",
     "cancel": "取消"
   },
+  "updates": {
+    "checking": "正在检查更新…",
+    "downloading": "正在下载更新…",
+    "downloaded": "更新已下载，重启后安装",
+    "installNow": "立即重启安装",
+    "checkNow": "检查更新"
+  },
   "instrument": {
     "title": "标的管理",
     "name": "标的名称",

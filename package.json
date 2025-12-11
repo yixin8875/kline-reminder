@@ -4,7 +4,11 @@
   "description": "A K-Line period countdown reminder tool for traders",
   "main": "./out/main/index.js",
   "author": "example.com",
-  "homepage": "https://www.electronjs.org",
+  "homepage": "https://github.com/yixin8875/kline-reminder",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yixin8875/kline-reminder.git"
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
@@ -31,6 +35,11 @@
       "out/**/*",
       "resources/**/*"
     ],
+    "publish": [{
+      "provider": "github",
+      "owner": "boohee",
+      "repo": "kline-reminder"
+    }],
     "mac": {
       "target": "dmg",
       "icon": "resources/icon.png",

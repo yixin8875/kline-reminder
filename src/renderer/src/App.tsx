@@ -6,6 +6,7 @@ import { AddTaskModal } from './components/AddTaskModal'
 import { SettingsModal } from './components/SettingsModal'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { ThemeManager } from './components/ThemeManager'
+import { UpdateBanner } from './components/UpdateBanner'
 import { JournalView } from './components/JournalView'
 import { StatsView } from './components/StatsView'
 import { useTaskStore } from './store/useTaskStore'
@@ -75,6 +76,7 @@ function App(): JSX.Element {
   return (
     <div className="flex flex-col h-screen bg-background text-foreground select-none transition-colors duration-300">
       <ThemeManager />
+      <UpdateBanner />
       <Sidebar 
         onAddTask={() => setIsAddModalOpen(true)} 
         onOpenSettings={() => setIsSettingsOpen(true)}

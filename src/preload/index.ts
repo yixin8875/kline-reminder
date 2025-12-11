@@ -42,6 +42,25 @@ export const events = {
   }
 }
 
+export const updates = {
+  checkForUpdates: (): Promise<boolean> => ipcRenderer.invoke('update:check'),
+  installUpdate: (): Promise<boolean> => ipcRenderer.invoke('update:install'),
+  onAvailable: (cb: () => void): void => {
+    ipcRenderer.on('update:available', cb)
+  },
+  onDownloaded: (cb: () => void): void => {
+    ipcRenderer.on('update:downloaded', cb)
+  },
+  onProgress: (cb: (progress: any) => void): void => {
+    ipcRenderer.on('update:progress', (_e, p) => cb(p))
+  },
+  offAll: (): void => {
+    ipcRenderer.removeAllListeners('update:available')
+    ipcRenderer.removeAllListeners('update:downloaded')
+    ipcRenderer.removeAllListeners('update:progress')
+  }
+}
+
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.
@@ -50,6 +69,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
     contextBridge.exposeInMainWorld('events', events)
+    contextBridge.exposeInMainWorld('updates', updates)
   } catch (error) {
     console.error(error)
   }
@@ -60,4 +80,6 @@ if (process.contextIsolated) {
   window.api = api
   // @ts-ignore (define in dts)
   window.events = events
+  // @ts-ignore (define in dts)
+  window.updates = updates
 }

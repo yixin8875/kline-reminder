@@ -3,6 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { dbService } from './services/DatabaseService'
+const autoUpdater = (require as any)('electron-updater').autoUpdater
 
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
@@ -85,6 +86,12 @@ function createWindow(): void {
   }
   
   createTray(mainWindow)
+  if (!is.dev) {
+    try {
+      autoUpdater.autoDownload = true
+      autoUpdater.checkForUpdates()
+    } catch {}
+  }
 }
 
 // IPC for Always on Top
@@ -136,6 +143,40 @@ ipcMain.on('resize-window', (event, width, height) => {
     }
   }
 })
+
+// Auto Update IPC and events
+ipcMain.handle('update:check', async () => {
+  if (!is.dev) {
+    try {
+      await autoUpdater.checkForUpdates()
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+  return false
+})
+
+ipcMain.handle('update:install', async () => {
+  try {
+    autoUpdater.quitAndInstall()
+    return true
+  } catch {
+    return false
+  }
+})
+
+try {
+  autoUpdater.on('update-available', () => {
+    mainWindow?.webContents.send('update:available')
+  })
+  autoUpdater.on('download-progress', (progress: any) => {
+    mainWindow?.webContents.send('update:progress', progress)
+  })
+  autoUpdater.on('update-downloaded', () => {
+    mainWindow?.webContents.send('update:downloaded')
+  })
+} catch {}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
