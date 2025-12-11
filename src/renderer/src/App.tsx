@@ -7,12 +7,13 @@ import { SettingsModal } from './components/SettingsModal'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { ThemeManager } from './components/ThemeManager'
 import { JournalView } from './components/JournalView'
+import { StatsView } from './components/StatsView'
 import { useTaskStore } from './store/useTaskStore'
 import { useWindowSizeStore } from './store/useWindowSizeStore'
 
 function App(): JSX.Element {
   const { t } = useTranslation()
-  const [currentView, setCurrentView] = useState<'reminders' | 'journal'>('reminders')
+  const [currentView, setCurrentView] = useState<'reminders' | 'journal' | 'stats'>('reminders')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   
@@ -53,7 +54,7 @@ function App(): JSX.Element {
   }, [currentView, setSize])
 
   // Handle Window Resizing based on View
-  const handleViewChange = (view: 'reminders' | 'journal') => {
+  const handleViewChange = (view: 'reminders' | 'journal' | 'stats') => {
     setCurrentView(view)
     const s = getSize(view)
     window.api.resizeWindow(s.width, s.height)
@@ -101,8 +102,10 @@ function App(): JSX.Element {
               </div>
             )}
           </div>
-        ) : (
+        ) : currentView === 'journal' ? (
           <JournalView />
+        ) : (
+          <StatsView />
         )}
       </div>
 

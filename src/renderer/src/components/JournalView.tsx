@@ -136,6 +136,11 @@ export function JournalView(): JSX.Element {
                     (log.pnl || 0) >= 0 ? "text-green-500" : "text-red-500"
                   )}>
                     {log.pnl ? (log.pnl > 0 ? `+${log.pnl}` : log.pnl) : '-'}
+                    {typeof log.usdPnl === 'number' && (
+                      <div className="text-xs text-muted-foreground">
+                        {log.usdPnl >= 0 ? `+$${log.usdPnl.toFixed(2)}` : `-$${Math.abs(log.usdPnl).toFixed(2)}`}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     {typeof log.riskReward === 'number' ? log.riskReward.toFixed(2) : '-'}

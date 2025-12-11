@@ -1,6 +1,6 @@
 import { Button } from './ui/button'
 import { Switch } from './ui/switch'
-import { Pin, PinOff, Plus, Settings, Clock, BookOpen } from 'lucide-react'
+import { Pin, PinOff, Plus, Settings, Clock, BookOpen, BarChart3 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '../utils/cn'
 
@@ -9,8 +9,8 @@ interface SidebarProps {
   onOpenSettings: () => void
   isAlwaysOnTop: boolean
   toggleAlwaysOnTop: () => void
-  currentView: 'reminders' | 'journal'
-  onViewChange: (view: 'reminders' | 'journal') => void
+  currentView: 'reminders' | 'journal' | 'stats'
+  onViewChange: (view: 'reminders' | 'journal' | 'stats') => void
 }
 
 export function Sidebar({ 
@@ -51,6 +51,18 @@ export function Sidebar({
           >
             <BookOpen className="w-4 h-4 mr-2" />
             <span className="hidden sm:inline">{t('sidebar.journal')}</span>
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={cn("h-8 px-3", currentView === 'stats' && "bg-background shadow-sm")}
+            onClick={() => {
+              onViewChange('stats')
+            }}
+            title={t('sidebar.stats')}
+          >
+            <BarChart3 className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">{t('sidebar.stats')}</span>
           </Button>
         </div>
       </div>

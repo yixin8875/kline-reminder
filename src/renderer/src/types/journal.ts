@@ -12,6 +12,7 @@ export interface TradeLog {
   entryPrice: number
   exitPrice?: number
   stopLoss?: number
+  positionSize?: number
   status: TradeStatus
   pnl?: number
   usdPnl?: number
@@ -30,6 +31,7 @@ export interface CreateTradeLogDTO {
   entryPrice: number
   exitPrice?: number
   stopLoss?: number
+  positionSize?: number
   status: TradeStatus
   pnl?: number
   usdPnl?: number

@@ -34,6 +34,7 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
   const [status, setStatus] = useState<TradeStatus>('Closed')
   const [pnl, setPnl] = useState('')
   const [riskReward, setRiskReward] = useState('')
+  const [positionSize, setPositionSize] = useState('')
   const [notes, setNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [existingFiles, setExistingFiles] = useState<string[]>([])
@@ -55,6 +56,7 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
       setStatus(log.status)
       setPnl(log.pnl != null ? String(log.pnl) : '')
       setRiskReward(log.riskReward != null ? String(log.riskReward) : '')
+      setPositionSize((log as any).positionSize != null ? String((log as any).positionSize) : '')
       setNotes(log.notes || '')
       const names = (log as any).imageFileNames && (log as any).imageFileNames.length > 0
         ? (log as any).imageFileNames
@@ -155,6 +157,7 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
         entryPrice: Number(entryPrice),
         exitPrice: exitPrice ? Number(exitPrice) : undefined,
         stopLoss: stopLoss ? Number(stopLoss) : undefined,
+        positionSize: positionSize ? Number(positionSize) : undefined,
         status,
         pnl: pnl ? Number(pnl) : undefined,
         riskReward: riskReward ? Number(riskReward) : undefined,
@@ -278,6 +281,13 @@ export function EditTradeModal({ open, onOpenChange, log }: EditTradeModalProps)
             <div className="space-y-2">
               <label className="text-sm font-medium">{t('journal.form.rrr')}</label>
               <Input type="number" placeholder="-" value={riskReward} disabled />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('journal.form.positionSize')}</label>
+              <Input type="number" placeholder="1" value={positionSize} onChange={(e) => setPositionSize(e.target.value)} />
             </div>
           </div>
 

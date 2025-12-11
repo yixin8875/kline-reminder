@@ -33,6 +33,7 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
   const [status, setStatus] = useState<TradeStatus>('Closed')
   const [pnl, setPnl] = useState('')
   const [riskReward, setRiskReward] = useState('')
+  const [positionSize, setPositionSize] = useState('')
   const [notes, setNotes] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -126,6 +127,7 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
         stopLoss: stopLoss ? Number(stopLoss) : undefined,
         status,
         pnl: pnl ? Number(pnl) : undefined,
+        positionSize: positionSize ? Number(positionSize) : undefined,
         riskReward: riskReward ? Number(riskReward) : undefined,
         notes,
         images: images.length > 0 ? images : undefined
@@ -149,6 +151,7 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
     setStopLoss('')
     setStatus('Closed')
     setPnl('')
+    setPositionSize('')
     setRiskReward('')
     setNotes('')
     setImages([])
@@ -269,6 +272,18 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
                 placeholder="0.00" 
                 value={pnl} 
                 onChange={(e) => setPnl(e.target.value)} 
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('journal.form.positionSize')}</label>
+              <Input 
+                type="number" 
+                placeholder="1" 
+                value={positionSize} 
+                onChange={(e) => setPositionSize(e.target.value)} 
               />
             </div>
           </div>

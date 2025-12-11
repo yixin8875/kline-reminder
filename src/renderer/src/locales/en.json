@@ -9,7 +9,8 @@
     "settings": "Settings",
     "addReminder": "Add Reminder",
     "reminders": "Reminders",
-    "journal": "Journal"
+    "journal": "Journal",
+    "stats": "Stats"
   },
   "task": {
     "delete": "Delete",
@@ -145,6 +146,7 @@
       "stopLoss": "Stop Loss",
       "rrr": "R/R",
       "pnl": "PnL",
+      "positionSize": "Position Size",
       "notes": "Notes",
       "notesPlaceholder": "Strategy, feelings, mistakes...",
       "screenshots": "Screenshots",
@@ -157,5 +159,14 @@
     "editTitle": "Edit Trade Log",
     "update": "Update Log",
     "updating": "Updating..."
+  },
+  "stats": {
+    "selectAccount": "Select Account",
+    "allAccounts": "All Accounts",
+    "totalTrades": "Total Trades",
+    "winRate": "Win Rate",
+    "netPoints": "Net Points",
+    "netUsd": "Net USD",
+    "avgRR": "Avg R/R"
   }
 }

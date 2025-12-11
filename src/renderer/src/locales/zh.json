@@ -9,7 +9,8 @@
     "settings": "设置",
     "addReminder": "添加提醒",
     "reminders": "提醒",
-    "journal": "日志"
+    "journal": "日志",
+    "stats": "统计"
   },
   "task": {
     "delete": "删除",
@@ -145,6 +146,7 @@
       "stopLoss": "止损价",
       "rrr": "盈亏比",
       "pnl": "盈亏",
+      "positionSize": "仓位大小",
       "notes": "备注",
       "notesPlaceholder": "策略、感受、失误…",
       "screenshots": "截图",
@@ -157,5 +159,14 @@
     "editTitle": "编辑交易日志",
     "update": "更新日志",
     "updating": "更新中..."
+  },
+  "stats": {
+    "selectAccount": "选择账户",
+    "allAccounts": "全部账户",
+    "totalTrades": "总笔数",
+    "winRate": "胜率",
+    "netPoints": "净点数",
+    "netUsd": "净美元",
+    "avgRR": "平均盈亏比"
   }
 }

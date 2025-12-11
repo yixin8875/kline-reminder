@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-type AppView = 'reminders' | 'journal'
+type AppView = 'reminders' | 'journal' | 'stats'
 
 interface WindowSize {
   width: number
@@ -19,7 +19,8 @@ export const useWindowSizeStore = create<WindowSizeState>()(
     (set, get) => ({
       sizes: {
         reminders: { width: 350, height: 600 },
-        journal: { width: 1000, height: 700 }
+        journal: { width: 1000, height: 700 },
+        stats: { width: 900, height: 700 }
       },
       setSize: (view, size) => {
         set((state) => ({

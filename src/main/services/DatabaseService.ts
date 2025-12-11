@@ -102,6 +102,7 @@ class DatabaseService {
   private computeUsdPnl(entry: any, instrument: any): number {
     if (!instrument) return 0
     const pv = Number(instrument.pointValueUSD || 0)
+    const size = Number(entry.positionSize || 1)
     let points = 0
     if (typeof entry.pnl === 'number') {
       points = Number(entry.pnl || 0)
@@ -110,7 +111,7 @@ class DatabaseService {
       const exitPrice = Number(entry.exitPrice)
       points = entry.direction === 'Long' ? (exitPrice - entryPrice) : (entryPrice - exitPrice)
     }
-    const usd = points * pv
+    const usd = points * pv * (Number.isFinite(size) ? size : 1)
     return Number.isFinite(usd) ? Number(usd.toFixed(2)) : 0
   }
 
