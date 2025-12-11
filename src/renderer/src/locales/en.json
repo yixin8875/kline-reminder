@@ -182,5 +182,8 @@
     "custom": "Custom",
     "from": "From",
     "to": "To"
+  },
+  "tts": {
+    "alert": "Attention. {{symbol}} {{timeframe}} is closing in {{seconds}} seconds."
   }
 }

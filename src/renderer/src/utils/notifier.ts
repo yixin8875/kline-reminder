@@ -1,4 +1,5 @@
 import { useTaskStore } from '../store/useTaskStore'
+import i18n from '../i18n'
 
 const playDefaultBeep = (): void => {
   const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
@@ -50,25 +51,28 @@ export const speakAlert = (symbol: string, periodMinutes: number, seconds: numbe
   const { ttsEnabled } = useTaskStore.getState()
   if (!ttsEnabled || !window.speechSynthesis) return
 
-  // Format timeframe for speech (e.g., "15 Minute", "1 Hour", "4 Hour")
   let timeframe = ""
   if (periodMinutes >= 60) {
     const hours = periodMinutes / 60
-    timeframe = `${hours} Hour${hours > 1 ? 's' : ''}`
+    timeframe = i18n.language.startsWith('zh')
+      ? `${hours}小时`
+      : `${hours} Hour${hours > 1 ? 's' : ''}`
   } else {
-    timeframe = `${periodMinutes} Minute${periodMinutes > 1 ? 's' : ''}`
+    timeframe = i18n.language.startsWith('zh')
+      ? `${periodMinutes}分钟`
+      : `${periodMinutes} Minute${periodMinutes > 1 ? 's' : ''}`
   }
 
-  const text = `Attention. ${symbol} ${timeframe} is closing in ${seconds} seconds.`
+  const text = i18n.t('tts.alert', { symbol, timeframe, seconds })
   
   // Cancel any pending speech to avoid queue buildup
   window.speechSynthesis.cancel()
 
   const utterance = new SpeechSynthesisUtterance(text)
-  // Set English voice if possible, or default
-  // Ideally we might want to allow language selection for TTS, but requirement implies English message.
-  // "Attention. BTC 15 Minute is closing in 30 seconds"
-  
-  utterance.lang = 'en-US' 
+  const lang = i18n.language.startsWith('zh') ? 'zh-CN' : 'en-US'
+  utterance.lang = lang
+  const voices = window.speechSynthesis.getVoices()
+  const match = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(lang.split('-')[0]))
+  if (match) utterance.voice = match
   window.speechSynthesis.speak(utterance)
 }

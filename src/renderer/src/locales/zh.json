@@ -82,6 +82,9 @@
     "installNow": "立即重启安装",
     "checkNow": "检查更新"
   },
+  "tts": {
+    "alert": "注意。{{symbol}} {{timeframe}} 将在 {{seconds}} 秒后收盘。"
+  },
   "instrument": {
     "title": "标的管理",
     "name": "标的名称",
