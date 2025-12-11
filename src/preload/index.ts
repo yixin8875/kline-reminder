@@ -33,6 +33,15 @@ const api = {
   resizeWindow: (width: number, height: number): void => ipcRenderer.send('resize-window', width, height)
 }
 
+export const events = {
+  onWindowResized: (callback: (payload: { width: number; height: number }) => void): void => {
+    ipcRenderer.on('window:resized', (_event, payload) => callback(payload))
+  },
+  offWindowResized: (): void => {
+    ipcRenderer.removeAllListeners('window:resized')
+  }
+}
+
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.
@@ -40,6 +49,7 @@ if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
+    contextBridge.exposeInMainWorld('events', events)
   } catch (error) {
     console.error(error)
   }
@@ -48,4 +58,6 @@ if (process.contextIsolated) {
   window.electron = electronAPI
   // @ts-ignore (define in dts)
   window.api = api
+  // @ts-ignore (define in dts)
+  window.events = events
 }

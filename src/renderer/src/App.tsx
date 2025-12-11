@@ -8,6 +8,7 @@ import { ConfirmDialog } from './components/ConfirmDialog'
 import { ThemeManager } from './components/ThemeManager'
 import { JournalView } from './components/JournalView'
 import { useTaskStore } from './store/useTaskStore'
+import { useWindowSizeStore } from './store/useWindowSizeStore'
 
 function App(): JSX.Element {
   const { t } = useTranslation()
@@ -24,6 +25,8 @@ function App(): JSX.Element {
   const removeTask = useTaskStore((state) => state.removeTask)
   const isAlwaysOnTop = useTaskStore((state) => state.isAlwaysOnTop)
   const setAlwaysOnTop = useTaskStore((state) => state.setAlwaysOnTop)
+  const getSize = useWindowSizeStore((state) => state.getSize)
+  const setSize = useWindowSizeStore((state) => state.setSize)
 
   // Initial Fetch
   useEffect(() => {
@@ -35,23 +38,25 @@ function App(): JSX.Element {
     window.api.setAlwaysOnTop(isAlwaysOnTop)
   }, [isAlwaysOnTop])
 
+  useEffect(() => {
+    const s = getSize('reminders')
+    window.api.resizeWindow(s.width, s.height)
+  }, [])
+
+  useEffect(() => {
+    window.events.onWindowResized(({ width, height }) => {
+      setSize(currentView, { width, height })
+    })
+    return () => {
+      window.events.offWindowResized()
+    }
+  }, [currentView, setSize])
+
   // Handle Window Resizing based on View
   const handleViewChange = (view: 'reminders' | 'journal') => {
     setCurrentView(view)
-    console.log('View changing to:', view)
-    
-    const width = view === 'journal' ? 1000 : 350
-    const height = 600
-
-    if (window.api && window.api.resizeWindow) {
-      console.log('Calling window.api.resizeWindow', width, height)
-      window.api.resizeWindow(width, height)
-    } else {
-      console.warn('window.api.resizeWindow missing, trying direct IPC')
-      if (window.electron && window.electron.ipcRenderer) {
-        window.electron.ipcRenderer.send('resize-window', width, height)
-      }
-    }
+    const s = getSize(view)
+    window.api.resizeWindow(s.width, s.height)
   }
 
   const handleDeleteClick = (id: string): void => {

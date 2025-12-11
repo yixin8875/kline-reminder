@@ -57,6 +57,11 @@ function createWindow(): void {
     mainWindow!.show()
   })
 
+  mainWindow.on('resize', () => {
+    const size = mainWindow!.getSize()
+    mainWindow!.webContents.send('window:resized', { width: size[0], height: size[1] })
+  })
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }

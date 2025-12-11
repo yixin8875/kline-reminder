@@ -40,5 +40,9 @@ declare global {
 
       resizeWindow: (width: number, height: number) => void
     }
+    events: {
+      onWindowResized: (callback: (payload: { width: number; height: number }) => void) => void
+      offWindowResized: () => void
+    }
   }
 }
