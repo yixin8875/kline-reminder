@@ -1,6 +1,6 @@
 {
   "name": "k-line-waker",
-  "version": "1.0.0",
+  "version": "1.1.3",
   "description": "A K-Line period countdown reminder tool for traders",
   "main": "./out/main/index.js",
   "author": "example.com",
