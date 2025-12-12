@@ -29,6 +29,12 @@ const api = {
   getAccounts: (): Promise<any[]> => ipcRenderer.invoke('account:list'),
   updateAccount: (id: string, update: any): Promise<number> => ipcRenderer.invoke('account:update', id, update),
   deleteAccount: (id: string): Promise<number> => ipcRenderer.invoke('account:delete', id),
+  
+  // Strategy API
+  createStrategy: (s: any): Promise<any> => ipcRenderer.invoke('strategy:create', s),
+  getStrategies: (): Promise<any[]> => ipcRenderer.invoke('strategy:list'),
+  updateStrategy: (id: string, update: any): Promise<number> => ipcRenderer.invoke('strategy:update', id, update),
+  deleteStrategy: (id: string): Promise<number> => ipcRenderer.invoke('strategy:delete', id),
 
   resizeWindow: (width: number, height: number): void => ipcRenderer.send('resize-window', width, height)
 }

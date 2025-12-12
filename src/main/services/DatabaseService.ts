@@ -9,6 +9,7 @@ class DatabaseService {
   private journalDb: Datastore<any>
   private instrumentsDb: Datastore<any>
   private accountsDb: Datastore<any>
+  private strategiesDb: Datastore<any>
   private imagesDir: string
 
   constructor() {
@@ -35,6 +36,11 @@ class DatabaseService {
 
     this.accountsDb = Datastore.create({
       filename: path.join(userDataPath, 'accounts.db'),
+      autoload: true,
+      timestampData: true
+    })
+    this.strategiesDb = Datastore.create({
+      filename: path.join(userDataPath, 'strategies.db'),
       autoload: true,
       timestampData: true
     })
@@ -331,6 +337,26 @@ class DatabaseService {
       throw new Error('ACCOUNT_IN_USE')
     }
     return await this.accountsDb.remove({ _id: id }, {})
+  }
+
+  async createStrategy(strategy: any) {
+    return await this.strategiesDb.insert(strategy)
+  }
+
+  async getStrategies() {
+    return await this.strategiesDb.find({}).sort({ name: 1 })
+  }
+
+  async updateStrategy(id: string, update: any) {
+    return await this.strategiesDb.update({ _id: id }, { $set: update }, {})
+  }
+
+  async deleteStrategy(id: string) {
+    const usedCount = await this.journalDb.count({ strategyId: id })
+    if (usedCount > 0) {
+      throw new Error('STRATEGY_IN_USE')
+    }
+    return await this.strategiesDb.remove({ _id: id }, {})
   }
 }
 

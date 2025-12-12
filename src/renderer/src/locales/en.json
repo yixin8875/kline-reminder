@@ -109,6 +109,18 @@
       "account": "Account"
     }
   },
+  "strategy": {
+    "title": "Strategy Management",
+    "name": "Strategy Name",
+    "description": "Strategy Description",
+    "add": "Add Strategy",
+    "edit": "Edit Strategy",
+    "delete": "Delete",
+    "manage": "Manage Strategies",
+    "select": "Select Strategy",
+    "selectPlaceholder": "Please select a strategy",
+    "cannotDeleteInUse": "Strategy is used by trade logs and cannot be deleted"
+  },
   "journal": {
     "totalTrades": "Total Trades",
     "winRate": "Win Rate",
@@ -118,6 +130,7 @@
     "table": {
       "date": "Date",
       "symbol": "Symbol",
+      "strategy": "Strategy",
       "direction": "Direction",
       "entryExit": "Entry / Exit",
       "pnl": "PnL",
@@ -184,7 +197,9 @@
     "to": "To",
     "exportExcel": "Export Excel",
     "exportSuccess": "Export succeeded",
-    "exportFailed": "Export failed"
+    "exportFailed": "Export failed",
+    "strategyWinRates": "Strategy Win Rates",
+    "noData": "No data"
   },
   "tts": {
     "alert": "Attention. {{symbol}} {{timeframe}} is closing in {{seconds}} seconds."

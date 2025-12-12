@@ -9,11 +9,13 @@ import { cn } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
 import { EditTradeModal } from './EditTradeModal'
 import { useAccountStore } from '../store/useAccountStore'
+import { useStrategyStore } from '../store/useStrategyStore'
 
 export function JournalView(): JSX.Element {
   const { t } = useTranslation()
   const { logs, fetchLogs, deleteLog, getLogImage, isLoading } = useJournalStore()
   const { accounts, fetchAccounts } = useAccountStore()
+  const { strategies, fetchStrategies } = useStrategyStore()
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [previewImages, setPreviewImages] = useState<string[]>([])
@@ -26,6 +28,7 @@ export function JournalView(): JSX.Element {
   useEffect(() => {
     fetchLogs()
     fetchAccounts()
+    fetchStrategies()
   }, [])
 
   const handleDeleteClick = (id: string) => {
@@ -94,6 +97,7 @@ export function JournalView(): JSX.Element {
               <TableHead className="w-[100px]">{t('journal.table.date')}</TableHead>
               <TableHead>{t('journal.table.symbol')}</TableHead>
               <TableHead>{t('account.table.account')}</TableHead>
+              <TableHead>{t('journal.table.strategy')}</TableHead>
               <TableHead>{t('journal.table.direction')}</TableHead>
               <TableHead>{t('journal.table.entryExit')}</TableHead>
               <TableHead>{t('journal.table.pnl')}</TableHead>
@@ -105,7 +109,7 @@ export function JournalView(): JSX.Element {
           <TableBody>
             {logs.length === 0 && !isLoading ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
                   {t('journal.empty')}
                 </TableCell>
               </TableRow>
@@ -117,6 +121,7 @@ export function JournalView(): JSX.Element {
                   </TableCell>
                   <TableCell>{log.symbol}</TableCell>
                   <TableCell>{accounts.find(a => (a.id || a._id) === log.accountId)?.name || '-'}</TableCell>
+                  <TableCell>{strategies.find(s => (s.id || s._id) === (log as any).strategyId)?.name || '-'}</TableCell>
                   <TableCell>
                     <span className={cn(
                       "px-2 py-1 rounded-full text-xs font-medium",

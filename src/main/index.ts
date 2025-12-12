@@ -127,6 +127,11 @@ ipcMain.handle('account:create', (_, acc) => dbService.createAccount(acc))
 ipcMain.handle('account:list', () => dbService.getAccounts())
 ipcMain.handle('account:update', (_, id, update) => dbService.updateAccount(id, update))
 ipcMain.handle('account:delete', (_, id) => dbService.deleteAccount(id))
+// IPC for Strategies
+ipcMain.handle('strategy:create', (_, s) => dbService.createStrategy(s))
+ipcMain.handle('strategy:list', () => dbService.getStrategies())
+ipcMain.handle('strategy:update', (_, id, update) => dbService.updateStrategy(id, update))
+ipcMain.handle('strategy:delete', (_, id) => dbService.deleteStrategy(id))
 
 // IPC for Window Resizing
 ipcMain.on('resize-window', (event, width, height) => {
@@ -187,6 +192,7 @@ ipcMain.handle('journal:export-excel', async (_evt, payload: { accountId?: strin
   ws.columns = [
     { header: 'Date', key: 'date', width: 14 },
     { header: 'Symbol', key: 'symbol', width: 12 },
+    { header: 'Strategy', key: 'strategy', width: 16 },
     { header: 'Direction', key: 'direction', width: 10 },
     { header: 'Entry', key: 'entryPrice', width: 10 },
     { header: 'Exit', key: 'exitPrice', width: 10 },
@@ -202,17 +208,27 @@ ipcMain.handle('journal:export-excel', async (_evt, payload: { accountId?: strin
   const { accountId, start, end } = payload || {}
   const account = accountId ? await dbService.getAccountById(accountId) : null
   const logs = await dbService.getJournalEntriesByAccountAndRange(accountId, start, end)
+  const strategies = await dbService.getStrategies()
+  const strategyMap: Record<string, string> = {}
+  for (const s of strategies) {
+    const key = s._id || s.id
+    if (key) strategyMap[key] = s.name
+  }
 
   let rowIndex = 2
   for (const log of logs) {
+    const sid = (log as any).strategyId
+    const strategyName = sid ? (strategyMap[sid] || '') : ''
+    const positionCell = (log as any).positionSize ?? ''
     ws.addRow({
       date: new Date(log.date).toLocaleString(),
       symbol: log.symbol,
+      strategy: strategyName,
       direction: log.direction,
       entryPrice: log.entryPrice,
       exitPrice: log.exitPrice ?? '',
       stopLoss: log.stopLoss ?? '',
-      positionSize: log.positionSize ?? '',
+      positionSize: positionCell,
       pnl: log.pnl ?? '',
       usdPnl: typeof log.usdPnl === 'number' ? Number(log.usdPnl).toFixed(2) : '',
       riskReward: typeof log.riskReward === 'number' ? Number(log.riskReward).toFixed(2) : '',
@@ -221,7 +237,7 @@ ipcMain.handle('journal:export-excel', async (_evt, payload: { accountId?: strin
     })
 
     const images: string[] = log.imageFileNames || (log.imageFileName ? [log.imageFileName] : [])
-    let imageCol = 13
+    let imageCol = 14
     for (const fn of images) {
       try {
         const dataUrl = await dbService.getImage(fn)

@@ -8,6 +8,7 @@ export interface TradeLog {
   symbol: string
   instrumentId?: string
   accountId?: string
+  strategyId?: string
   direction: TradeDirection
   entryPrice: number
   exitPrice?: number
@@ -27,6 +28,7 @@ export interface CreateTradeLogDTO {
   symbol: string
   instrumentId?: string
   accountId?: string
+  strategyId?: string
   direction: TradeDirection
   entryPrice: number
   exitPrice?: number

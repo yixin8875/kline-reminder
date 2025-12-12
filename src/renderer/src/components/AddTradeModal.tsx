@@ -11,6 +11,8 @@ import { useInstrumentStore } from '../store/useInstrumentStore'
 import { InstrumentManagerModal } from './InstrumentManagerModal'
 import { useAccountStore } from '../store/useAccountStore'
 import { AccountManagerModal } from './AccountManagerModal'
+import { useStrategyStore } from '../store/useStrategyStore'
+import { StrategyManagerModal } from './StrategyManagerModal'
 
 interface AddTradeModalProps {
   open: boolean
@@ -22,10 +24,12 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
   const { t } = useTranslation()
   const { instruments, fetchInstruments } = useInstrumentStore()
   const { accounts, fetchAccounts } = useAccountStore()
+  const { strategies, fetchStrategies } = useStrategyStore()
   
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [selectedInstrumentId, setSelectedInstrumentId] = useState<string>('')
   const [selectedAccountId, setSelectedAccountId] = useState<string>('')
+  const [selectedStrategyId, setSelectedStrategyId] = useState<string>('')
   const [direction, setDirection] = useState<TradeDirection>('Long')
   const [entryPrice, setEntryPrice] = useState('')
   const [exitPrice, setExitPrice] = useState('')
@@ -39,6 +43,7 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isInstrumentModalOpen, setIsInstrumentModalOpen] = useState(false)
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false)
+  const [isStrategyModalOpen, setIsStrategyModalOpen] = useState(false)
 
   // Auto-calculate PnL if Entry, Exit, and Direction are set
   useEffect(() => {
@@ -74,8 +79,9 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
     if (open) {
       fetchInstruments()
       fetchAccounts()
+      fetchStrategies()
     }
-  }, [open, fetchInstruments, fetchAccounts])
+  }, [open, fetchInstruments, fetchAccounts, fetchStrategies])
 
   const handlePaste = (e: ClipboardEvent<HTMLDivElement>) => {
     const items = e.clipboardData.items
@@ -121,6 +127,7 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
         symbol: inst ? inst.name.toUpperCase() : '',
         instrumentId: selectedInstrumentId,
         accountId: selectedAccountId,
+        strategyId: selectedStrategyId || undefined,
         direction,
         entryPrice: Number(entryPrice),
         exitPrice: exitPrice ? Number(exitPrice) : undefined,
@@ -145,6 +152,7 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
     setDate(new Date().toISOString().split('T')[0])
     setSelectedInstrumentId('')
     setSelectedAccountId('')
+    setSelectedStrategyId('')
     setDirection('Long')
     setEntryPrice('')
     setExitPrice('')
@@ -213,6 +221,26 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
                 {accounts.map((acc) => (
                   <option key={acc.id || acc._id} value={acc.id || acc._id!}>
                     {acc.name} (${acc.balance.toFixed(2)})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center justify-between">
+                <span>{t('strategy.select')}</span>
+                <Button variant="outline" size="sm" onClick={() => setIsStrategyModalOpen(true)}>
+                  {t('strategy.manage')}
+                </Button>
+              </label>
+              <select
+                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={selectedStrategyId}
+                onChange={(e) => setSelectedStrategyId(e.target.value)}
+              >
+                <option value="">{t('strategy.selectPlaceholder')}</option>
+                {strategies.map((s) => (
+                  <option key={s.id || s._id} value={s.id || s._id!}>
+                    {s.name}
                   </option>
                 ))}
               </select>
@@ -356,6 +384,7 @@ export function AddTradeModal({ open, onOpenChange }: AddTradeModalProps): JSX.E
         </DialogFooter>
       </DialogContent>
       <InstrumentManagerModal open={isInstrumentModalOpen} onOpenChange={setIsInstrumentModalOpen} />
+      <StrategyManagerModal open={isStrategyModalOpen} onOpenChange={setIsStrategyModalOpen} />
       <AccountManagerModal open={isAccountModalOpen} onOpenChange={setIsAccountModalOpen} />
     </Dialog>
   )

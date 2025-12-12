@@ -37,6 +37,11 @@ declare global {
       getAccounts: () => Promise<Account[]>
       updateAccount: (id: string, update: Partial<Account>) => Promise<number>
       deleteAccount: (id: string) => Promise<number>
+      
+      createStrategy: (s: { name: string; description: string }) => Promise<any>
+      getStrategies: () => Promise<any[]>
+      updateStrategy: (id: string, update: { name?: string; description?: string }) => Promise<number>
+      deleteStrategy: (id: string) => Promise<number>
 
       resizeWindow: (width: number, height: number) => void
     }

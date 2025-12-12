@@ -6,11 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { cn } from '../utils/cn'
+import { useStrategyStore } from '../store/useStrategyStore'
 
 export function StatsView(): JSX.Element {
   const { t } = useTranslation()
   const { logs, fetchLogs, isLoading } = useJournalStore()
   const { accounts, fetchAccounts } = useAccountStore()
+  const { strategies, fetchStrategies } = useStrategyStore()
   const [accountId, setAccountId] = useState<string>('')
   const [rangeMode, setRangeMode] = useState<'week' | 'month' | 'year' | 'custom'>('week')
   const [fromDate, setFromDate] = useState<string>('')
@@ -19,6 +21,7 @@ export function StatsView(): JSX.Element {
   useEffect(() => {
     fetchLogs()
     fetchAccounts()
+    fetchStrategies()
   }, [])
 
   const dateRange = useMemo(() => {
@@ -75,6 +78,25 @@ export function StatsView(): JSX.Element {
     const v = arr.reduce((a, b) => a + b, 0) / arr.length
     return v.toFixed(2)
   })()
+
+  const stratWinRates = useMemo(() => {
+    const groups: Record<string, { name: string; wins: number; losses: number; total: number }> = {}
+    for (const log of winLoss) {
+      const sid = (log as any).strategyId || ''
+      const sName = sid ? (strategies.find((s) => (s.id || s._id) === sid)?.name || sid) : t('strategy.selectPlaceholder')
+      const g = groups[sid] || { name: sName, wins: 0, losses: 0, total: 0 }
+      if (log.status === 'Win') g.wins += 1
+      if (log.status === 'Loss') g.losses += 1
+      g.total += 1
+      groups[sid] = g
+    }
+    const arr = Object.values(groups)
+    return arr.map((g) => ({
+      name: g.name,
+      winRate: g.total > 0 ? (g.wins / g.total) * 100 : 0,
+      total: g.total
+    })).sort((a, b) => b.winRate - a.winRate)
+  }, [winLoss, strategies, t])
 
   return (
     <div className="p-4 space-y-4">
@@ -169,6 +191,28 @@ export function StatsView(): JSX.Element {
         <div className="text-xl font-bold">{avgRR}</div>
       </div>
 
+      <div className="bg-card p-4 rounded-lg border shadow-sm">
+        <div className="text-xs text-muted-foreground font-medium mb-3">{t('stats.strategyWinRates')}</div>
+        <div className="space-y-2">
+          {stratWinRates.length === 0 && (
+            <div className="text-xs text-muted-foreground">{t('stats.noData')}</div>
+          )}
+          {stratWinRates.map((s) => (
+            <div key={s.name} className="grid grid-cols-5 gap-2 items-center">
+              <div className="col-span-1 text-xs">{s.name}</div>
+              <div className="col-span-3 h-3 bg-muted rounded overflow-hidden">
+                <div
+                  className={cn('h-full rounded bg-green-500')}
+                  style={{ width: `${Math.min(100, Math.max(0, s.winRate))}%` }}
+                />
+              </div>
+              <div className={cn('col-span-1 text-xs text-right', s.winRate >= 50 ? 'text-green-600' : 'text-red-600')}>
+                {s.winRate.toFixed(1)}%
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="border rounded-md bg-card overflow-hidden flex flex-col">
         <Table>
           <TableHeader>

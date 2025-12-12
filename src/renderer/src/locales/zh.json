@@ -112,6 +112,18 @@
       "account": "账户"
     }
   },
+  "strategy": {
+    "title": "策略管理",
+    "name": "策略名称",
+    "description": "策略描述",
+    "add": "添加策略",
+    "edit": "编辑策略",
+    "delete": "删除",
+    "manage": "管理策略",
+    "select": "选择策略",
+    "selectPlaceholder": "请选择策略",
+    "cannotDeleteInUse": "策略已被交易日志使用，无法删除"
+  },
   "journal": {
     "totalTrades": "总笔数",
     "winRate": "胜率",
@@ -121,6 +133,7 @@
     "table": {
       "date": "日期",
       "symbol": "品种",
+      "strategy": "策略",
       "direction": "方向",
       "entryExit": "开/平仓",
       "pnl": "盈亏",
@@ -187,6 +200,8 @@
     "to": "结束日期",
     "exportExcel": "导出Excel",
     "exportSuccess": "导出成功",
-    "exportFailed": "导出失败"
+    "exportFailed": "导出失败",
+    "strategyWinRates": "策略胜率",
+    "noData": "暂无数据"
   }
 }
